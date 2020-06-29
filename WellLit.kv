@@ -34,20 +34,15 @@
     		width: 300
 			id: metadata_box
 			orientation: 'vertical'
-			MetaLabel:
-				id: recorder_label
-				text: '[b]Recorder:[/b] \n'
-			MetaLabel:
-				id: aliquoter_label
-				text: '[b]Aliquoter:[/b] \n'
-			MetaLabel:
-				id: plate_barcode_label
-				text: '[b]Plate Barcode:[/b] \n'
-			MetaLabel: 
-				text: '[b]Tube Barcode:[/b]'
-			MetaLabel:
-				id: tube_barcode_label
-				font_size: 50
+		    Button:
+		    	text: 'Undo Last Tube'
+		    	on_press: root.undoTube()
+		    Button:
+		    	text: 'Finish Plate'
+		    	on_press: root.finishPlate()
+		    Button:
+		        text: 'Test Button'
+		        on_press: root.finishPlate()
 			Label:
 				size_hint_y: 1.5
 
@@ -56,6 +51,7 @@
 	        text: "Please scan the recorder's barcode"
 	        font_size: 50
 	        bold: True
+
     	BoxLayout:
     		size_hint_x: None
     		width: 300
@@ -72,7 +68,12 @@
 		    Button:
 		    	text: 'Finish Plate'
 		    	on_press: root.finishPlate()
+		    Button:
+		        text: 'Test Button'
+		        on_press: root.finishPlate()
+
 	WellPlot:
-		id: wellPlot
+		id: wellPlot_source
+
 
 		

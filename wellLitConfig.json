@@ -1,7 +1,10 @@
 {
     "OUTPUT_PATH": "C:\\Users\\joana.cabrera\\Desktop\\wl_output",
-    "A1_X": 0.235,
-    "A1_Y": 0.59,
+    "OUTPUT_PATH": "C:\\Users\\joana.cabrera\\Desktop\\wl_output",
+    "A1_X_Source": 0.235,
+    "A1_Y_Source": 0.59,
+    "A1_X_Dest": 0.235,
+    "A1_Y_Dest": 0.59,
     "WELL_SPACING": 0.045,
     "MARKER_SHAPE": "square",
     "CIRC_RADIUIS": 0.024,

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle
 import time
 import matplotlib as mpl
-from tubeToWell import *
+from WellToWell import *
 
 
 class Well:
@@ -19,7 +19,7 @@ class Well:
 		if shape == 'circle':
 			self.marker = Circle(self.center, radius=size_param, color='gray', zorder=0)
 		elif shape == 'square':
-			self.marker = Rectangle(self.center, width=size_param, height=size_param, color = 'gray', zorder=0)
+			self.marker = Rectangle(self.center, width=size_param, height=size_param, color='gray', zorder=0)
 		self.barcode = ''
 
 	def markEmpty(self):
@@ -53,14 +53,10 @@ class PlateLighting:
 		self.ax.axis('off')
 		self.well_dict = {} # links barcode to Well object
 
-		# set up tube to well
-		self.ttw = TubeToWell()
-
 		# draw all the empty wells
 		self.wells = [] # column wise list of wells
 
-		# load config file
-
+		# populates the wells in an array and adds default marker colors
 		for x in range(12):
 			x_coord = a1_x + (well_spacing * x)
 			for y in range(8):
@@ -72,6 +68,7 @@ class PlateLighting:
 		# keep track of target index
 		self.well_idx = 0
 
+####
 	def switchWell(self, check_input):
 		location = self.ttw.checkTubeBarcode(check_input)
 		if location:
@@ -111,6 +108,3 @@ class PlateLighting:
 		# clear well dictionary
 		self.well_dict.clear()
 		self.well_idx = 0
-
-		# reset TubeToWell object
-		self.ttw.reset()
