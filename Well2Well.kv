@@ -20,6 +20,15 @@
 	markup: True
 	font_size: 20
 
+<LoadDialog>:
+    id: load_dialog
+    Button:
+        text: 'Open'
+        on_release: load_dialog.open(filechooser.path, filechooser.selection)
+    FileChooserListView:
+        id: filechooser
+        on_selection: load_dialog.selected(filechooser.selection)
+
 <Button>
 	font_size: 30
 

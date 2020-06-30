@@ -14,19 +14,32 @@ from kivy.core.window import Window
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
+from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.uix.filechooser import FileChooserListView
 import json, logging, time, os, time, csv
 from WellToWell import WellToWell
 
 
+# https://stackoverflow.com/questions/51947447/kivy-select-folder-with-filechooser
+class LoadDialog(FloatLayout):
+
+	def __init__(self, **kwargs):
+		super(LoadDialog, self).__init__(**kwargs)
+		self.load = ObjectProperty(None)
+		self.cancel = ObjectProperty(None)
+
+	def show(self):
+		content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
+		self._popup = Popup(title="Load file", content=content,
+						size_hint=(0.9, 0.9))
+		self._popup.open()
+
+
 class Well2WellWidget(FloatLayout):
 	def __init__(self, **kwargs):
 		super(Well2WellWidget, self).__init__(**kwargs)
-		# self.layout = FloatLayout()
-		self.layout = BoxLayout(orientation='horizontal')
-		self.load_file_button = Button(text='Load Transfer')
-		self.layout.add_widget(self.load_file_button)
+		self.loadfile = ObjectProperty(None)
 
 	def next(self):
 		pass
@@ -140,5 +153,5 @@ if __name__ == '__main__':
 						datefmt='%Y-%m-%d %H:%M:%S')
 	logging.info('Session started')
 	Window.size = (1600, 1200)
-	Window.fullscreen = True
+	# Window.fullscreen = True
 	Well2WellApp().run()
