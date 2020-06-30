@@ -10,12 +10,16 @@ import os
 import re
 import json
 import pandas as pd
+from plateLighting import PlateLighting, Well
 
 
 class WellToWell:
-	""" A class for mapping a set of transfers from one plate to another plate.
+	"""
+	A class for mapping a set of transfers from one plate to another plate.
 	"""
 	def __init__(self):
+		self.pl_source = PlateLighting()
+		self.pl_dest   = PlateLighting()
 
 		# make a list of the well row characters
 		self.well_rows = [chr(x) for x in range(ord('A'), ord('H') + 1)] # move to state machine
