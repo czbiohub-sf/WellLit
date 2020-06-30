@@ -23,10 +23,7 @@ from WellToWell import WellToWell
 class Well2WellWidget(FloatLayout):
 	def __init__(self, **kwargs):
 		super(Well2WellWidget, self).__init__(**kwargs)
-		# self.layout = FloatLayout()
-		self.layout = BoxLayout(orientation='horizontal')
-		self.load_file_button = Button(text='Load Transfer')
-		self.layout.add_widget(self.load_file_button)
+		self.load = LoadDialog()
 
 	def next(self):
 		pass
@@ -35,7 +32,7 @@ class Well2WellWidget(FloatLayout):
 		pass
 
 	def loadTransfer(self):
-		pass
+		self.load.open()
 
 	def abortTransfer(self):
 		pass
@@ -48,9 +45,15 @@ class Well2WellWidget(FloatLayout):
 		self.warningsMade = False
 
 
-class Well2WellApp(App):
+class WellLitApp(App):
 	def build(self):
 		return Well2WellWidget()
+
+
+class LoadDialog(BoxLayout):
+    def open(self, path, filename):
+        with open(os.path.join(path, filename[0])) as f:
+            return(f.read())
 
 
 class WellPlot(BoxLayout):
@@ -140,5 +143,5 @@ if __name__ == '__main__':
 						datefmt='%Y-%m-%d %H:%M:%S')
 	logging.info('Session started')
 	Window.size = (1600, 1200)
-	Window.fullscreen = True
-	Well2WellApp().run()
+	Window.fullscreen = False
+	WellLitApp().run()

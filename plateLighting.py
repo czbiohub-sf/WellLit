@@ -51,7 +51,7 @@ class PlateLighting:
 		self.well_dict = {} # links barcode to Well object
 
 		# draw all the empty wells
-		self.wells = [] # column wise list of wells
+		self.wells = [] # dict of wells
 
 		# populates the wells in an array and adds default marker colors
 		for x in range(12):

@@ -13,6 +13,15 @@
 	height: 400
 	width: 800
 
+<LoadDialog>:
+    id: load_diag
+    Button
+        text: "open"
+        on_release: load_diag.open(filechooser.path, filechooser.selection)
+    FileChooserListView:
+        id: filechooser
+        on_selection: load_diag.selected(filechooser.selection)
+
 <MetaLabel>:
 	text_size: self.size
 	halign: 'left'
@@ -30,7 +39,7 @@
 		pos_hint: {'left': 1, 'top': 1}
         Button:
             text: 'Load Transfer'
-            on_press: root.loadTransfer()
+            on_press: root.undo()
             size_hint: 1, 0.2
         Button:
             text: 'Abort Transfer'
