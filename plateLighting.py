@@ -17,7 +17,7 @@ import matplotlib as mpl
 from enum import Enum
 
 
-class Status(Enum):
+class WStatus(Enum):
 	empty = 1
 	target = 2
 	filled = 3
@@ -29,7 +29,7 @@ class Status(Enum):
 class Well:
 	""" A class for individual wells in the matplotlib plot
     """
-	def __init__(self, center, shape, size_param, status=Status.empty):
+	def __init__(self, center, shape, size_param, status=WStatus.empty):
 		self.center = center
 		self.shape = shape
 		self.size_param = size_param
@@ -41,17 +41,17 @@ class Well:
 									zorder=0)
 
 	def markEmpty(self):
-		self.status = Status.empty
+		self.status = WStatus.empty
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 0
 
 	def markFilled(self):
-		self.status = Status.filled
+		self.status = WStatus.filled
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 1
 
 	def markTarget(self):
-		self.status = Status.target
+		self.status = WStatus.target
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 2
 
