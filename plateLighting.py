@@ -96,15 +96,17 @@ class PlateLighting:
 				well_name = row + str(num)
 				self.well_list.append(well_name)
 				x_coord = self.a1_x + self.well_spacing * idx_n
-				y_coord = self.a1_y + self.well_spacing * idx_r
+				y_coord = self.a1_y + self.well_spacing * (12 - idx_r)
+				size_param = self.size_dict[self.shape]
 
 				self.well_dict[well_name] = Well((x_coord, y_coord),
-												 self.shape, self.size_dict[self.shape])
+												 self.shape, size_param)
 
 	def setMarker(self, shape):
+		self.shape = shape
 		for name in self.well_list:
 			orig_well = self.well_dict[name]
-			new_well = Well(orig_well.center, shape, self.size_dict[shape])
+			new_well = Well(orig_well.center, shape, self.size_dict[self.shape])
 
 	def refresh(self):
 		self.ax.clear()
