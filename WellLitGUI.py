@@ -2,6 +2,10 @@
 # Joana Cabrera
 # 3/15/2020
 
+# revised
+# Andrew Cote
+# 6/30/2020
+
 import kivy
 kivy.require('1.11.1')
 from kivy.app import App
@@ -10,6 +14,7 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
 from plateLighting import *
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
+# noinspection ProblematicWhitespace
 from kivy.core.window import Window
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
@@ -21,25 +26,44 @@ import json, logging, time, os, time, csv
 from WellToWell import WellToWell
 
 
-# https://stackoverflow.com/questions/51947447/kivy-select-folder-with-filechooser
+
 class LoadDialog(FloatLayout):
+	load = ObjectProperty(None)
+	cancel = ObjectProperty(None)
 
-	def __init__(self, **kwargs):
-		super(LoadDialog, self).__init__(**kwargs)
-		self.load = ObjectProperty(None)
-		self.cancel = ObjectProperty(None)
-
-	def show(self):
-		content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
-		self._popup = Popup(title="Load file", content=content,
-						size_hint=(0.9, 0.9))
-		self._popup.open()
-
+#TODO: Add warning messages about file importing into a popup window
+#TODO: Add buttons that change the marker type of a WellPlot object
 
 class Well2WellWidget(FloatLayout):
 	def __init__(self, **kwargs):
 		super(Well2WellWidget, self).__init__(**kwargs)
-		self.loadfile = ObjectProperty(None)
+		self._popup = None
+		self.wtw = None
+
+	def reset_plates(self):
+		self.ids.source_plate.initialize()
+		self.ids.dest_plate.initialize()
+
+	def show_load(self):
+		content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
+		self._popup = Popup(title='Load File', content=content, size_hint=(0.5, 0.5))
+		self._popup.open()
+
+	def load(self, path, filename):
+		target = (os.path.join(str(path), str(filename[0])))
+		if os.path.isfile(target):
+			print(target)
+		else:
+			print('not a file')
+		self.dismiss_popup()
+
+		# Reset the plates and create a new Well2Well transfer to manage them
+		self.reset_plates()
+
+
+
+	def dismiss_popup(self):
+		self._popup.dismiss()
 
 	def next(self):
 		pass
@@ -67,32 +91,36 @@ class Well2WellApp(App):
 
 
 class WellPlot(BoxLayout):
-	def __init__(self, shape='circle', **kwargs):
+	'''
+	Acts as a Kivy GUI block which contains a matplotlib figure as its only content.
+	matplotlib figure resizes with BoxLayout resizing.
+
+	Owns a PlateLighting object
+	'''
+	shape = ObjectProperty(None)
+
+	def __init__(self, **kwargs):
 		super(WellPlot, self).__init__(**kwargs)
 
-		self.shape = shape
+	def initialize(self):
 		# load configs
-		self.cwd = os.getcwd()
-		self.config_path = os.path.join(self.cwd, "wellLitConfig.json")
-		with open(self.config_path) as json_file:
-			self.configs = json.load(json_file)
-		A1_X = self.configs["A1_X"]
-		A1_Y = self.configs["A1_Y"]
-		WELL_SPACING = self.configs["WELL_SPACING"]
-		SHAPE = self.configs["MARKER_SHAPE"]
-		if SHAPE == 'circle':
-			SIZE_PARAM = self.configs["CIRC_RADIUIS"]
-			SHAPE = self.configs["MARKER_SHAPE"]
-		elif SHAPE == 'square':
-			SIZE_PARAM = self.configs["SQUARE_LENGTH"]
+		cwd = os.getcwd()
+		config_path = os.path.join(cwd, "wellLitConfig.json")
+		with open(config_path) as json_file:
+			configs = json.load(json_file)
+		A1_X = configs["A1_X"]
+		A1_Y = configs["A1_Y"]
+		size_param = configs["size_param"]
+		well_spacing = configs["well_spacing"]
 
 		# set up PlateLighting object
-		self.pl = PlateLighting(A1_X, A1_Y, SHAPE, SIZE_PARAM, WELL_SPACING)
+		self.pl = PlateLighting(A1_X, A1_Y, self.shape, size_param, well_spacing)
 		self.add_widget(FigureCanvasKivyAgg(figure=self.pl.fig))
 
 	def on_touch_down(self, touch):
 		# this method keeps the app from crashing if the plot is clicked on
 		pass
+
 
 class ConfirmPopup(Popup):
 	def __init__(self, txt_file_path=None):

@@ -21,13 +21,23 @@
 	font_size: 20
 
 <LoadDialog>:
-    id: load_dialog
-    Button:
-        text: 'Open'
-        on_release: load_dialog.open(filechooser.path, filechooser.selection)
-    FileChooserListView:
-        id: filechooser
-        on_selection: load_dialog.selected(filechooser.selection)
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        FileChooserListView:
+            id: filechooser
+            path: '/Users/andrew.cote/Documents/Well2Well/'
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: 'Cancel'
+                on_release: root.cancel()
+            Button:
+                text: 'Load'
+                on_release: root.load(filechooser.path, filechooser.selection)
 
 <Button>
 	font_size: 30
@@ -39,7 +49,7 @@
 		pos_hint: {'left': 1, 'top': 1}
         Button:
             text: 'Load Transfer'
-            on_press: root.loadTransfer()
+            on_press: root.show_load()
             size_hint: 1, 0.2
         Button:
             text: 'Abort Transfer'
@@ -63,6 +73,10 @@
         size_hint: 0.625, 1
         pos_hint: {'right': 1}
         WellPlot:
+            shape: 'square'
+            id: source_plate
             size_hint: 1, 0.5
         WellPlot:
+            shape: 'circle'
+            id: dest_plate
             size_hint: 1, 0.5

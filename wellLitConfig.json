@@ -3,8 +3,9 @@
     "OUTPUT_PATH": "C:\\Users\\joana.cabrera\\Desktop\\wl_output",
     "A1_X": 0.225,
     "A1_Y": 0.75,
-    "WELL_SPACING": 0.06,
-    "MARKER_SHAPE": "circle",
-    "CIRC_RADIUIS": 0.024,
-    "SQUARE_LENGTH": 0.06
+    "size_param": {
+        "circle" : 0.024,
+        "square" : 0.025
+    },
+    "well_spacing": 0.06
 }

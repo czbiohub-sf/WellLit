@@ -6,102 +6,124 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle
 import matplotlib as mpl
 
+# !/usr/bin/env python3
+
+# Joana Cabrera
+# 3/15/2020
+import matplotlib.pyplot as plt
+from matplotlib.patches import Circle, Rectangle
+import matplotlib as mpl
+
+from enum import Enum
+
+
+class Status(Enum):
+	empty = 1
+	target = 2
+	filled = 3
+
+	def color(self):
+		return {'empty': 'gray', 'target': 'red', 'filled': 'blue'}[self.name]
+
 
 class Well:
 	""" A class for individual wells in the matplotlib plot
-	"""
-	def __init__(self, center, shape, size_param):
+    """
+	def __init__(self, center, shape, size_param, status=Status.empty):
 		self.center = center
+		self.shape = shape
 		self.size_param = size_param
+		self.status = status
 		if shape == 'circle':
-			self.marker = Circle(self.center, radius=size_param, color='gray', zorder=0)
+			self.marker = Circle(self.center, radius=size_param, color=self.status.color(), zorder=0)
 		elif shape == 'square':
-			self.marker = Rectangle(self.center, width=size_param, height=size_param, color='gray', zorder=0)
-		self.barcode = ''
+			self.marker = Rectangle(self.center, width=size_param, height=size_param, color=self.status.color(),
+									zorder=0)
 
 	def markEmpty(self):
-		self.marker.set_color('gray')
-		self.marker.zorder=0
-		
+		self.status = Status.empty
+		self.marker.set_color(self.status.color())
+		self.marker.zorder = 0
+
 	def markFilled(self):
-		self.marker.set_color('red')
-		self.marker.zorder=1
+		self.status = Status.filled
+		self.marker.set_color(self.status.color())
+		self.marker.zorder = 1
 
 	def markTarget(self):
-		self.marker.set_color('yellow')
-		self.marker.zorder=2
+		self.status = Status.target
+		self.marker.set_color(self.status.color())
+		self.marker.zorder = 2
 
-	def markRescanned(self):
-		self.marker.set_color('blue')
-		self.marker.zorder=2
+	def setMarker(self, shape):
+		if shape == 'circle':
+			self.marker = Circle(self.center, radius=self.size_param, color=self.status.color(), zorder=0)
+		elif shape == 'square':
+			self.marker = Rectangle(self.center, width=self.size_param, height=self.size_param,
+									color=self.status.color(), zorder=0)
+
 
 class PlateLighting:
 	""" A class for lighting up the corresponding well using matplotlib
-	"""
-	def __init__(self, a1_x, a1_y, shape, size_param, well_spacing):
+    """
 
-		# set up plot 
+	def __init__(self, a1_x, a1_y, shape, size_dict, well_spacing):
+
+		# set up plot
 		mpl.rcParams['toolbar'] = 'None'
 		plt.style.use('dark_background')
 		self.fig, self.ax = plt.subplots()
 		self.fig.tight_layout()
-		self.ax.axis('equal')
 		self.fig.subplots_adjust(bottom=0)
+
+		self.a1_x, self.a1_y = a1_x, a1_y
+		self.shape = shape
+		self.size_dict = size_dict
+		self.well_spacing = well_spacing
+
+		self.well_dict = {}  # maps well names to Well objects
+		self.well_list = []
+
+		self.makeWells()  # populates a dict of well_name : Well
+		self.refresh()  # adds dict of wells to canvas in 8x12 grid
+
+	def makeWells(self):
+		self.well_rows = [chr(x) for x in range(ord('A'), ord('H') + 1)]
+		self.well_nums = [x for x in range(1, 13)]
+
+		for idx_r, row in enumerate(self.well_rows):
+			for idx_n, num in enumerate(self.well_nums):
+				well_name = row + str(num)
+				self.well_list.append(well_name)
+				x_coord = self.a1_x + self.well_spacing * idx_n
+				y_coord = self.a1_y + self.well_spacing * idx_r
+
+				self.well_dict[well_name] = Well((x_coord, y_coord),
+												 self.shape, self.size_dict[self.shape])
+
+	def setMarker(self, shape):
+		for name in self.well_list:
+			orig_well = self.well_dict[name]
+			new_well = Well(orig_well.center, shape, self.size_dict[shape])
+
+	def refresh(self):
+		self.ax.clear()
 		self.ax.axis('off')
-		self.well_dict = {} # links barcode to Well object
-
-		# draw all the empty wells
-		self.wells = [] # column wise list of wells
-
-		# populates the wells in an array and adds default marker colors
-		for x in range(12):
-			x_coord = a1_x + (well_spacing * x)
-			for y in range(8):
-				y_coord = a1_y - (well_spacing * y)
-				well = Well((x_coord,y_coord), shape, size_param)
-				self.wells.append(well)
-				self.ax.add_artist(well.marker)
-		
-		# keep track of target index
-		self.well_idx = 0
-
-####
-	def switchWell(self, check_input):
-		location = self.ttw.checkTubeBarcode(check_input)
-		if location:
-			self.target = self.wells[self.well_idx]
-			self.well_idx += 1
-			self.target.markTarget()
-			self.target.location = location
-			self.target.barcode = check_input
-			self.fig.canvas.draw()
-
-			# the well will be marked as filled when the next target is marked 
-			self.target.markFilled()
-
-			# link target well object to a barcode in the well_dict dictonary
-			self.well_dict[self.target.barcode] = self.target
-
-			return True # return true if new tube
-
-		elif check_input in self.ttw.scanned_tubes:
-			already_scanned_tube = self.well_dict[check_input]
-			already_scanned_tube.markRescanned()
-			self.fig.canvas.draw()
-			
-			# the well will be marked as filled when the next target is marked 
-			already_scanned_tube.markFilled()
-			return False # return false if not new tube
-
-	def show(self):
-		plt.show()
-
-	def reset(self):
-		# mark all wells as empty
-		for w in self.wells:
-			w.markEmpty()
+		self.ax.axis('equal')
+		for name in self.well_list:
+			self.ax.add_artist(self.well_dict[name].marker)
 		self.fig.canvas.draw()
 
-		# clear well dictionary
-		self.well_dict.clear()
-		self.well_idx = 0
+	def setTarget(self, name):
+		self.well_dict[name].markTarget()
+
+	def setFilled(self, name):
+		self.well_dict[name].markFilled()
+
+	def setEmpty(self, name):
+		self.well_dict[name].markEmpty()
+
+	def emptyWells(self):
+		# mark all wells as empty
+		for name in self.well_list:
+			self.well_dict[name].markEmpty()
