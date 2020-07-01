@@ -23,9 +23,12 @@ from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.uix.filechooser import FileChooserListView
 import json, logging, time, os, time, csv
-from WellToWell import WellToWell
+from WellToWell import WelltoWell
 
-
+'''
+TODO:
+* repace print with logging info 
+'''
 
 class LoadDialog(FloatLayout):
 	load = ObjectProperty(None)
