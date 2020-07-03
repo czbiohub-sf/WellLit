@@ -5,41 +5,44 @@
 import logging, csv, time, os, re, json, uuid, datetime, argparse
 import pandas as pd
 from plateLighting import PlateLighting, Well
+import csv, re, uuid, datetime
+import pandas as pd
+import numpy as np
+from plateLighting import Well, PlateLighting
+from Transfer import Transfer, TransferProtocol
 
 
 class WelltoWell:
-	"""
-	* Loads a csv file into a pandas DataFrame, checking for duplicates or invalid Well labels
-	* Parses a validated DataFrame into a TransferProtocol, PlateTransfer, Transfers
-	* Updates Transfers on functions connected to user actions, i.e. next, skipped, failedm, assigns unique ids
-	* Writes Transfers to transferlog.csv
+	'''
+   * Loads a csv file into a pandas DataFrame, checking for duplicates or invalid Well labels
+   * Parses a validated DataFrame into a TransferProtocol
+   * Updates Transfers on functions connected to user actions, i.e. next, skipped, failed
+   * Writes Transfers to transferlog.csv
 
 
-	User-facing functions:
-		next, skip, failed - marks transfers
+    User-facing functions:
+        next, skip, failed - marks transfers
 
-	Internal functions:
-		checkDuplicatesSource
-		checkDuplicatesTarget
-		parseDataframe
+    Internal functions:
+        checkDuplicatesSource
+        checkDuplicatesTarget
+        parseDataframe
 
-	Objects
-		2xPlateLighting
-			96 x Well
-		1 x TransferProtocol
-			N x PlateTransfer
-				M x Transfer
-	"""
-
-
-
+    Objects
+         2 x PlateLighting
+             96 x Well
+         1 x TransferProtocol
+             N x PlateTransfer
+                M x Transfer
+    '''
 
 	def __init__(self, csv=None):
 		self.csv = csv
 		self.error_msg = ''
 		self.df = None
+		self.tp = None
 
-		if csv is not None:
+		if self.csv is not None:
 			self.loadCsv(csv)
 
 	def loadCsv(self, csv):
@@ -54,6 +57,9 @@ class WelltoWell:
 
 		if hasSourDupes or hasDestDupes:
 			print(str(msg_s) + msg_d)
+			self.df = None
+		else:
+			self.tp = TransferProtocol(self.df)
 
 	def checkDuplicateDestination(self):
 		hasDupes = False
@@ -85,7 +91,7 @@ class WelltoWell:
 		msg = ''
 
 		for plate in plates:
-			batch = self.df.where(df['PlateName'] == plate).dropna()
+			batch = self.df.where(self.df['PlateName'] == plate).dropna()
 
 			dupes_mask = batch.duplicated(subset='SourceWell')
 			dupes = batch.where(dupes_mask).dropna()

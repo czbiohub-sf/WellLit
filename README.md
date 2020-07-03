@@ -64,7 +64,9 @@ Model Classes:
         
     Transfer:
        * dict-like object with the following fields:
-            unique_id, platename, sourcewell, targetwell, timestamp = None, status = None
+            source_plate, source_well, dest_plate, dest_well, status, timestamp, id, updated
+       *     
+             status = None
        * When status is assigned by Well2Well user action, timestamp is generated 
         
 
