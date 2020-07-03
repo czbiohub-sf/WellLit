@@ -18,22 +18,6 @@ class WelltoWell:
    * Parses a validated DataFrame into a TransferProtocol
    * Updates Transfers on functions connected to user actions, i.e. next, skipped, failed
    * Writes Transfers to transferlog.csv
-
-
-    User-facing functions:
-        next, skip, failed - marks transfers
-
-    Internal functions:
-        checkDuplicatesSource
-        checkDuplicatesTarget
-        parseDataframe
-
-    Objects
-         2 x PlateLighting
-             96 x Well
-         1 x TransferProtocol
-             N x PlateTransfer
-                M x Transfer
     '''
 
 	def __init__(self, csv=None):
@@ -41,25 +25,34 @@ class WelltoWell:
 		self.error_msg = ''
 		self.df = None
 		self.tp = None
+		self.error_msg = ''
 
 		if self.csv is not None:
 			self.loadCsv(csv)
 
+	def log(self, error):
+		self.error_msg = error
+		print(error)
+		logging.info(error)
+
 	def loadCsv(self, csv):
 		try:
 			self.df = pd.read_csv(csv)
+			self.log('CSV file %s loaded' % csv)
 		except:
-			print('Failed to load file csv %s' % csv)
+			self.log('Failed to load file csv %s' % csv)
 			return '_'
 
 		hasSourDupes, msg_s = self.checkDuplicateSource()
 		hasDestDupes, msg_d = self.checkDuplicateDestination()
 
 		if hasSourDupes or hasDestDupes:
-			print(str(msg_s) + msg_d)
+			self.log(str(msg_s) + msg_d)
 			self.df = None
 		else:
 			self.tp = TransferProtocol(self.df)
+			self.log('TransferProtocol with %s transfers in %s plates created' %
+					 (self.tp.num_transfers, self.tp.num_plates))
 
 	def checkDuplicateDestination(self):
 		hasDupes = False

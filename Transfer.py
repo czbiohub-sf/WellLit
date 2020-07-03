@@ -49,12 +49,15 @@ TransferProtocol builds a sequence of transfers from a dataframe
 * Raises flags when a plate or transfer sequence is complete
 
 
+Transfers should only exist in one single place, inside a TransferProtocol dict[id] = tf. Internally transfers are
+referenced by unique_id and moved between lists like completed, skipped, etc. 
+
 '''
 
 
 class TransferProtocol():
 
-    def __init__(self, df, dest_plate = ''):
+    def __init__(self, df):
         self.df = df
         self.transfers = {}
         self.transfers_by_plate = {}
@@ -67,7 +70,7 @@ class TransferProtocol():
             plate_transfers = []
             for idx, plate_df_entry in plate_df.iterrows():
                 src_plt = plate_df_entry[0]
-                dest_plt = dest_plate
+                dest_plt = DEST
                 src_well = plate_df_entry[1]
                 dest_well = plate_df_entry[2]
                 unique_id = str(uuid.uuid1())
@@ -100,6 +103,8 @@ class TransferProtocol():
         for plate in self.plate_names:
             self.plate_sizes[plate] = len(self.transfers_by_plate[plate])
 
+        self.error_msg = ''
+        self.override = False
         self.canUndo = False
         self.transferProtocol = False
         self.plateComplete = False
@@ -111,27 +116,30 @@ class TransferProtocol():
         if self.transfers[self.tf_seq[self.current_idx]]['timestamp'] is None:
             return True
         else:
-            print('Cannot update transfer: %s, status is already marked as %s' %
-                  (current_transfer.id[0:8], current_transfer['status']))
+            self.log('Cannot update transfer: %s, status is already marked as %s' %
+                     (current_transfer.id[0:8], current_transfer['status']))
             if self.current_idx_plate == plate_size - 1:
-                print('Plate %s is currently full, hit next plate to continue' % self.plate_names[self.current_plate])
+                self.log('Plate %s is complete, press next plate to continue' % self.plate_names[self.current_plate])
             return False
+
+    def log(self, msg: str):
+        self.msg = msg
+        print(msg)
+        logging.info(msg)
 
     def step(self):
         """
         Moves index to the next transfer in a plate. If plate full or transfer complete, raises flag
         """
-        current_transfer = self.transfers[self.tf_seq[self.current_idx]]
-        plate_size = self.plate_sizes[self.plate_names[self.current_plate]]
+        self.sortTransfers()
 
-        if self.current_idx_plate == plate_size - 1:
-            self.plateComplete = True
+        if self.current_idx_plate == self.plate_sizes[self.current_plate_name] - 1:
             if self.current_idx == self.num_transfers - 1:
                 self.transferProtocolComplete = True
-                print('TransferProtocol complete')
+                self.log('TransferProtocol complete')
             else:
-                print('Plate complete')
-
+                self.plateComplete = True
+                self.log('Plate %s completed' % self.current_plate_name)
         else:
             self.current_idx += 1
             self.current_idx_plate += 1
@@ -139,18 +147,34 @@ class TransferProtocol():
 
     def nextPlate(self):
         if self.plateComplete:
-            if self.current_plate == self.num_plates - 1:
-                print('TransferProtocol complete')
-            else:
-                self.current_plate += 1
-                self.current_plate_idx = 0
-                self.current_plate_name = self.plate_names[self.current_plate]
-                print('Please load plate %s' % self.current_plate_name)
+            self.plateComplete = False
+            self.current_plate += 1
+            self.current_idx_plate = 0
+            self.current_idx += 1
+            self.current_plate_name = self.plate_names[self.current_plate]
+            self.log('Plate %s loaded' % self.current_plate_name)
 
         else:
-            print('Warning: Plate %s not yet complete' % self.current_plate_name)
+            self.log('Warning: Plate %s not yet complete' % self.current_plate_name)
+            if self.override:
+
+                skipped_transfers_in_plate = len(list(set(self.lists['uncompleted']) &
+                                                      set(self.transfers_by_plate[self.current_plate_name])))
+                self.log('Remaining %s transfers in plate %s skipped' %
+                         (skipped_transfers_in_plate, self.plate_names[self.current_plate]))
+                self.override = False
+                if self.current_plate == self.num_plates - 1:
+                    self.log('TransferProtocol complete')
+                else:
+                    self.plateComplete = False
+                    self.current_plate += 1
+                    self.current_idx_plate = 0
+                    self.current_idx += skipped_transfers_in_plate
+                    self.current_plate_name = self.plate_names[self.current_plate]
+                    self.log('Plate %s loaded' % self.current_plate_name)
 
     def sortTransfers(self):
+        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': []}
         for transfer in self.transfers.values():
             self.lists[self.transfers[transfer.id]['status']].append(transfer.id)
 
@@ -158,21 +182,21 @@ class TransferProtocol():
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.completed)
             self.canUndo = True
-            print('transfer complete: %s' % self.transfers[self.tf_seq[self.current_idx]].id[0:8])
+            self.log('transfer complete: %s' % self.transfers[self.tf_seq[self.current_idx]].id[0:8])
             self.step()
 
     def skip(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.skipped)
             self.canUndo = True
-            print('transfer skipped: %s' % self.transfers[self.tf_seq[self.current_idx]].id[0:8])
+            self.log('transfer skipped: %s' % self.transfers[self.tf_seq[self.current_idx]].id[0:8])
             self.step()
 
     def failed(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.failed)
             self.canUndo = True
-            print('transfer failed: %s' % self.transfers[self.tf_seq[self.current_idx]].id[0:8])
+            self.log('transfer failed: %s' % self.transfers[self.tf_seq[self.current_idx]].id[0:8])
             self.step()
 
     def undo(self):
@@ -183,8 +207,16 @@ class TransferProtocol():
             self.transfers[self.tf_seq[self.current_idx]].updateStatus(TStatus.uncompleted)
             self.transfers[self.tf_seq[self.current_idx]].resetTimestamp()
             self.canUndo = False
-            print('transfer marked incomplete: %s' % self.transfers[self.tf_seq[self.current_idx]].id[0:8])
+            self.log('transfer marked incomplete: %s' % self.transfers[self.tf_seq[self.current_idx]].id[0:8])
         else:
-            print('Cannot undo previous operation')
+            self.log('Cannot undo previous operation')
+
+    def _check(self):
+        '''
+        Check to see if global index and plate index match
+        '''
+        print(self.tf_seq[self.current_idx] == self.transfers_by_plate[self.current_plate_name][self.current_idx_plate])
+
+
 
 

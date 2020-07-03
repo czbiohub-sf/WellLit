@@ -25,20 +25,12 @@ from kivy.uix.filechooser import FileChooserListView
 import json, logging, time, os, time, csv
 from WellToWell import WelltoWell
 
-'''
-TODO:
-* repace print with logging info 
-'''
-
-
-
-import logging
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] - %(message)s',
     filename='filename.txt')  # pass explicit filename here
-logger = logging.get_logger()  # get the root logger
+logger = logging.getLogger()  # get the root logger
 logger.warning('This should go in the file.')
 
 
