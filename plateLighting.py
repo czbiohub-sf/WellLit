@@ -17,7 +17,7 @@ import matplotlib as mpl
 from enum import Enum
 
 
-class Status(Enum):
+class WStatus(Enum):
 	empty = 1
 	target = 2
 	filled = 3
@@ -29,7 +29,7 @@ class Status(Enum):
 class Well:
 	""" A class for individual wells in the matplotlib plot
     """
-	def __init__(self, center, shape, size_param, status=Status.empty):
+	def __init__(self, center, shape, size_param, status=WStatus.empty):
 		self.center = center
 		self.shape = shape
 		self.size_param = size_param
@@ -41,17 +41,17 @@ class Well:
 									zorder=0)
 
 	def markEmpty(self):
-		self.status = Status.empty
+		self.status = WStatus.empty
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 0
 
 	def markFilled(self):
-		self.status = Status.filled
+		self.status = WStatus.filled
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 1
 
 	def markTarget(self):
-		self.status = Status.target
+		self.status = WStatus.target
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 2
 
@@ -96,15 +96,17 @@ class PlateLighting:
 				well_name = row + str(num)
 				self.well_list.append(well_name)
 				x_coord = self.a1_x + self.well_spacing * idx_n
-				y_coord = self.a1_y + self.well_spacing * idx_r
+				y_coord = self.a1_y + self.well_spacing * (12 - idx_r)
+				size_param = self.size_dict[self.shape]
 
 				self.well_dict[well_name] = Well((x_coord, y_coord),
-												 self.shape, self.size_dict[self.shape])
+												 self.shape, size_param)
 
 	def setMarker(self, shape):
+		self.shape = shape
 		for name in self.well_list:
 			orig_well = self.well_dict[name]
-			new_well = Well(orig_well.center, shape, self.size_dict[shape])
+			new_well = Well(orig_well.center, shape, self.size_dict[self.shape])
 
 	def refresh(self):
 		self.ax.clear()

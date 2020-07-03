@@ -23,8 +23,23 @@ from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.uix.filechooser import FileChooserListView
 import json, logging, time, os, time, csv
-from WellToWell import WellToWell
+from WellToWell import WelltoWell
 
+'''
+TODO:
+* repace print with logging info 
+'''
+
+
+
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] - %(message)s',
+    filename='filename.txt')  # pass explicit filename here
+logger = logging.get_logger()  # get the root logger
+logger.warning('This should go in the file.')
 
 
 class LoadDialog(FloatLayout):
@@ -154,7 +169,7 @@ class ConfirmPopup(Popup):
 		if self.txt_file_path:
 			txt_file = open(self.txt_file_path,"w")
 			txt_file.close()
-		WellLitApp.get_running_app().p.resetAll()
+		Well2WellApp.get_running_app().p.resetAll()
 
 
 class WellLitPopup(Popup):

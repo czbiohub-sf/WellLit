@@ -34,7 +34,7 @@ Model Classes:
     WelltoWell: 
        * Loads a csv file into a pandas DataFrame, checking for duplicates or invalid Well labels
        * Parses a validated DataFrame into a TransferProtocol, PlateTransfer, Transfers
-       * Updates Transfers on functions connected to user actions, i.e. next, skipped, failed
+       * Updates Transfers on functions connected to user actions, i.e. next, skipped, failedm, assigns unique ids
        * Writes Transfers to transferlog.csv
         
         
@@ -64,7 +64,6 @@ Model Classes:
         
     Transfer:
        * dict-like object with the following fields:
-            unique_id, platename, sourcewell, targetwell, timestamp = None, status = None
        * When status is assigned by Well2Well user action, timestamp is generated 
         
 
