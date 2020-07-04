@@ -24,7 +24,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.filechooser import FileChooserListView
 import json, logging, time, os, time, csv
 from WellToWell import WelltoWell
-
+from Transfer import TransferProtocol
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,16 +40,18 @@ class LoadDialog(FloatLayout):
 
 #TODO: Add warning messages about file importing into a popup window
 #TODO: Add buttons that change the marker type of a WellPlot object
+#TODO: Could move TP directly into Well2WellWidget
+
 
 class Well2WellWidget(FloatLayout):
 	def __init__(self, **kwargs):
 		super(Well2WellWidget, self).__init__(**kwargs)
 		self._popup = None
-		self.wtw = None
+		self.wtw = WelltoWell()
+		self.tp = TransferProtocol()
 
-	def reset_plates(self):
-		self.ids.source_plate.initialize()
-		self.ids.dest_plate.initialize()
+	def dismiss_popup(self):
+		self._popup.dismiss()
 
 	def show_load(self):
 		content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
@@ -58,32 +60,73 @@ class Well2WellWidget(FloatLayout):
 
 	def load(self, path, filename):
 		target = (os.path.join(str(path), str(filename[0])))
-		if os.path.isfile(target):
-			print(target)
-		else:
-			print('not a file')
+		logging.info('User selected file %s to load' % target)
 		self.dismiss_popup()
+		if os.path.isfile(target):
+			self.wtw.loadCsv(target)
+			if self.wtw.tp is not None:
+				self.reset_plates()
+				self.updateLights()
+				self.wtw.tp.id_type = ''
 
-		# Reset the plates and create a new Well2Well transfer to manage them
-		self.reset_plates()
+	def updateLights(self):
+		'''
+		dest_wells:
+			- colors well empty to filled, current target
+		source_wells:
+			- colors well filled to empty, current target
+		:return:
+		'''
+		self.ids.source_plate.pl.emptyWells()
+		self.ids.dest_plate.pl.emptyWells()
+		current_transfers = self.wtw.tp.transfers_by_plate[self.wtw.tp.current_plate_name]
 
+		# For transfer that is complete, color source well empty and dest well as full
+		for tf_id in self.wtw.tp.lists['completed']:
+			self.ids.dest_plate.pl.markFilled(self.wtw.tp.transfers[tf_id]['dest_well'])
+			if tf_id in current_transfers:
+				self.ids.source_plate.pl.markEmpty(self.wtw.tp.transfers[tf_id]['source_well'])
 
+		# For transfer that is uncomplete, mark source well as full
+		for tf_id in list(set(current_transfers) & set(self.wtw.tp.lists['uncompleted'])):
+			self.ids.source_plate.pl.markFilled(self.wtw.tp.transfers[tf_id]['source_well'])
 
-	def dismiss_popup(self):
-		self._popup.dismiss()
+		# Mark current targets
+		self.ids.source_plate.pl.markTarget(self.wtw.tp.transfers[self.wtw.tp.current_uid]['source_well'])
+		self.ids.dest_plate.pl.markTarget(self.wtw.tp.transfers[self.wtw.tp.current_uid]['dest_well'])
+
+		self.ids.source_plate.pl.show()
+		self.ids.dest_plate.pl.show()
+
+	def reset_plates(self):
+		self.ids.source_plate.initialize()
+		self.ids.dest_plate.initialize()
 
 	def next(self):
-		pass
+		self.wtw.next()
+		self.updateLights()
+
+	def skip(self):
+		self.wtw.skip()
+		self.updateLights()
+
+	def failed(self):
+		self.wtw.failed()
+		self.updateLights()
 
 	def undo(self):
-		pass
+		self.wtw.undo()
+		self.updateLights
 
-	def loadTransfer(self):
+	def nextPlate(self):
+		self.wtw.nextPlate()
+		self.updateLights()
+
+	def startTransfer(self):
 		pass
 
 	def abortTransfer(self):
 		pass
-		# self.confirm_popup.show()
 
 	def resetAll(self): 
 		self.plateLighting.reset()

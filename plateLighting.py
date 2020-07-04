@@ -25,7 +25,6 @@ class WStatus(Enum):
 	def color(self):
 		return {'empty': 'gray', 'target': 'red', 'filled': 'blue'}[self.name]
 
-
 class Well:
 	""" A class for individual wells in the matplotlib plot
     """
@@ -107,6 +106,7 @@ class PlateLighting:
 		for name in self.well_list:
 			orig_well = self.well_dict[name]
 			new_well = Well(orig_well.center, shape, self.size_dict[self.shape])
+			self.well_dict[name] = new_well
 
 	def refresh(self):
 		self.ax.clear()
@@ -116,16 +116,19 @@ class PlateLighting:
 			self.ax.add_artist(self.well_dict[name].marker)
 		self.fig.canvas.draw()
 
-	def setTarget(self, name):
+	def markTarget(self, name):
 		self.well_dict[name].markTarget()
 
-	def setFilled(self, name):
+	def markFilled(self, name):
 		self.well_dict[name].markFilled()
 
-	def setEmpty(self, name):
+	def markEmpty(self, name):
 		self.well_dict[name].markEmpty()
 
 	def emptyWells(self):
 		# mark all wells as empty
 		for name in self.well_list:
 			self.well_dict[name].markEmpty()
+
+	def show(self):
+		self.fig.canvas.draw()

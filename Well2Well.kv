@@ -57,11 +57,28 @@
             size_hint: 1, 0.2
         Label:
             text: ''
-            size_hint: 1, 0.5
+            size_hint: 1, 0.15
         Button:
-            text: 'Undo Aliquot'
-            size_hint: 1, 0.2
-            on_press: root.undo()
+            text: 'Next Plate'
+            size_hint: 1, 0.3
+            on_press: root.nextPlate()
+        Label:
+            text: ''
+            size_hint: 1, 0.15
+        BoxLayout:
+            orientation: 'horizontal'
+            Button:
+                text: 'Undo'
+                size_hint: 1, 0.2
+                on_press: root.undo()
+            Button:
+                text: 'Skip'
+                size_hint: 1, 0.2
+                on_press: root.skip()
+            Button:
+                text: 'Failed'
+                size_hint: 1, 0.2
+                on_press: root.failed()
         Button:
             text: 'Next'
             size_hint: 1, 1
