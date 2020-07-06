@@ -38,6 +38,7 @@ class LoadDialog(FloatLayout):
 	load = ObjectProperty(None)
 	cancel = ObjectProperty(None)
 
+
 #TODO: Add warning messages about file importing into a popup window
 #TODO: Add buttons that change the marker type of a WellPlot object
 #TODO: Could move TP directly into Well2WellWidget

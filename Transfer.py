@@ -7,6 +7,15 @@ import numpy as np
 # TODO: possible: create TransferSequence class
 DEST = 'destination-plate'
 
+
+class TError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
 class TStatus(Enum):
     uncompleted = 0
     completed = 1
@@ -118,8 +127,10 @@ class TransferProtocol(object):
         else:
             self.log('Cannot update transfer: %s, status is already marked as %s' %
                      (current_transfer.id[0:8], current_transfer['status']))
+            msg = self.msg
             if self.plateComplete():
                 self.log('Plate %s is complete, press next plate to continue' % self.current_plate_name)
+            raise (TError(msg + self.msg))
             return False
 
     def step(self):
