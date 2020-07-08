@@ -137,3 +137,48 @@ class WelltoWell:
 			msg = ''
 
 		return hasDupes, error_msg
+
+	def buildTransferProtocol(self, df):
+		self.tp = TransferProtocol()
+
+		if df is not None:
+			self.tp.plate_names = df['PlateName'].unique()
+
+			# organize transfers into a dict by unique_id, collect id's into lists by plateName
+			for plate_name in self.tp.plate_names:
+				plate_df = df[df['PlateName'] == plate_name]
+				plate_transfers = []
+				for idx, plate_df_entry in plate_df.iterrows():
+					src_plt = plate_df_entry[0]
+					dest_plt = DEST
+					src_well = plate_df_entry[1]
+					dest_well = plate_df_entry[2]
+					unique_id = str(uuid.uuid1())
+
+					tf = Transfer(src_plt, dest_plt, src_well, dest_well, unique_id)
+					plate_transfers.append(unique_id)
+					self.tp.transfers[unique_id] = tf
+
+				self.tp.transfers_by_plate[plate_name] = plate_transfers
+
+			# produce numpy array of ids to be performed in a sequence, grouped by plate.
+			current_idx = 0
+			self.tp.num_transfers = len(self.tp.transfers)
+			self.tp.tf_seq = np.empty(self.tp.num_transfers, dtype=object)
+
+			for plate in self.tp.plate_names:
+				plate = self.tp.transfers_by_plate[plate]
+				for tf_id in plate:
+					self.tp.tf_seq[current_idx] = tf_id
+					current_idx += 1
+
+			self.tp._current_idx = 0  # index in tf_seq
+			self.tp._current_plate = 0  # index in plate_names
+
+			self.tp.current_uid = self.tp.tf_seq[self.tp._current_idx]
+			self.tp.current_plate_name = self.tp.plate_names[self.tp._current_plate]
+			self.tp.num_plates = len(self.tp.plate_names)
+			self.tp.plate_sizes = {}
+			for plate in self.tp.plate_names:
+				self.tp.plate_sizes[plate] = len(self.tp.transfers_by_plate[plate])
+			self.tp.sortTransfers()

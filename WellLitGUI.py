@@ -44,9 +44,9 @@ class LoadDialog(FloatLayout):
 #TODO: Could move TP directly into Well2WellWidget
 
 
-class Well2WellWidget(FloatLayout):
+class WellLitWidget(FloatLayout):
 	def __init__(self, **kwargs):
-		super(Well2WellWidget, self).__init__(**kwargs)
+		super(WellLitWidget, self).__init__(**kwargs)
 		self._popup = None
 		self.wtw = WelltoWell()
 		self.tp = TransferProtocol()
@@ -138,7 +138,7 @@ class Well2WellWidget(FloatLayout):
 
 class Well2WellApp(App):
 	def build(self):
-		return Well2WellWidget()
+		return WellLitWidget()
 
 
 class WellPlot(BoxLayout):

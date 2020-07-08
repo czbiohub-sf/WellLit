@@ -28,10 +28,12 @@ class TStatus(Enum):
 
 class Transfer(dict):
     """
-    Dict like object that contains transfer information.
+    Dict like object that contains transfer information. Requires unique id for initialization.
     """
 
-    def __init__(self, source_plate: str, dest_plate: str, source_well: str, dest_well: str, unique_id: str,
+    def __init__(self, unique_id,
+                 source_plate=None, dest_plate=None, source_well=None, dest_well=None,
+                 source_tube=None, dest_tube=None,
                  timestamp=None, status: TStatus = TStatus.uncompleted):
         self['source_plate'] = source_plate
         self['source_well'] = source_well
@@ -39,6 +41,8 @@ class Transfer(dict):
         self['dest_well'] = dest_well
         self['status'] = status.name
         self['timestamp'] = timestamp
+        self['source_tube'] = source_tube
+        self['dest_tube'] = dest_tube
         self.status = status
         self.id = unique_id
 
@@ -53,9 +57,10 @@ class Transfer(dict):
 
 
 '''
-TransferProtocol builds a sequence of transfers from a dataframe
-* Transfers are stored in a dict that indexes by unique id's for all internal transfer management
+TransferProtocol contains a sequence of transfers 
+* Transfers are stored in a dict that indexes by unique id's
 * Exposes functions which update status of transfers, synchronizes lists and flags with updates
+* Provides database like functionality for higher level transfer managements
 
 
 Transfers should only exist in one single place, inside a TransferProtocol dict[id] = tf. Internally transfers are
@@ -66,58 +71,16 @@ referenced by unique_id and moved between lists like completed, skipped, etc.
 
 class TransferProtocol(object):
 
-    def __init__(self, df=None, id_type = 'uid'):
-        self.df = df
+    def __init__(self, id_type='uid'):
         self.id_type = id_type
         self.transfers = {}
         self.transfers_by_plate = {}
+        self.current_uid = None
         self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'target': None}
         self.error_msg = ''
         self.msg = ''
         self.override = False
         self.canUndo = False
-
-        if df is not None:
-            self.plate_names = self.df['PlateName'].unique()
-
-            # organize transfers into a dict by unique_id, collect id's into lists by plateName
-            for plate_name in self.plate_names:
-                plate_df = self.df[self.df['PlateName'] == plate_name]
-                plate_transfers = []
-                for idx, plate_df_entry in plate_df.iterrows():
-                    src_plt = plate_df_entry[0]
-                    dest_plt = DEST
-                    src_well = plate_df_entry[1]
-                    dest_well = plate_df_entry[2]
-                    unique_id = str(uuid.uuid1())
-
-                    tf = Transfer(src_plt, dest_plt, src_well, dest_well, unique_id)
-                    plate_transfers.append(unique_id)
-                    self.transfers[unique_id] = tf
-
-                self.transfers_by_plate[plate_name] = plate_transfers
-
-            # produce numpy array of ids to be performed in a sequence, grouped by plate.
-            current_idx = 0
-            self.num_transfers = len(self.transfers)
-            self.tf_seq = np.empty(self.num_transfers, dtype=object)
-
-            for plate in self.plate_names:
-                plate = self.transfers_by_plate[plate]
-                for tf_id in plate:
-                    self.tf_seq[current_idx] = tf_id
-                    current_idx += 1
-
-            self._current_idx = 0  # index in tf_seq
-            self._current_plate = 0  # index in plate_names
-
-            self.current_uid = self.tf_seq[self._current_idx]
-            self.current_plate_name = self.plate_names[self._current_plate]
-            self.num_plates = len(self.plate_names)
-            self.plate_sizes = {}
-            for plate in self.plate_names:
-                self.plate_sizes[plate] = len(self.transfers_by_plate[plate])
-            self.sortTransfers()
 
     def canUpdate(self):
         current_transfer = self.transfers[self.current_uid]
