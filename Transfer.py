@@ -74,81 +74,29 @@ class TransferProtocol(object):
     def __init__(self, id_type='uid'):
         self.id_type = id_type
         self.transfers = {}
-        self.transfers_by_plate = {}
         self.current_uid = None
         self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'target': None}
         self.error_msg = ''
         self.msg = ''
         self.override = False
         self.canUndo = False
+        self._current_idx = 0
+        self.tf_seq = np.array(0, dtype=object)
 
-    def canUpdate(self):
-        current_transfer = self.transfers[self.current_uid]
-
-        if current_transfer['timestamp'] is None:
-            return True
-        else:
-            self.log('Cannot update transfer: %s, status is already marked as %s' %
-                     (current_transfer.id[0:8], current_transfer['status']))
-            msg = self.msg
-            if self.plateComplete():
-                self.log('Plate %s is complete, press next plate to continue' % self.current_plate_name)
-            raise (TError(msg + self.msg))
-            return False
+    '''
+    buildTransferProtocol and step should be implemented in inherited classes according to the use-case application
+    '''
+    def buildTransferProtocol(self):
+        '''
+        Populates a transfer sequence of Transfer objects in a specified order, and assigned unique ids to each Transfer
+        '''
+        pass
 
     def step(self):
-        """
-        Moves index to the next transfer in a plate. If plate full or transfer complete, raises flag
-        """
-        self.sortTransfers()
-        self.canUndo = True
-
-        if self.plateComplete():
-            if self.protocolComplete():
-                self.log('TransferProtocol is complete')
-            else:
-                self.log('Plate %s completed' % self.current_plate_name)
-        else:
-            self.current_idx_increment()
-
-    def nextPlate(self):
-        self.canUndo = False
-        if self.plateComplete():
-            if not self.protocolComplete():
-                self.current_plate_increment()
-                self.current_idx_increment()
-                self.log('Plate %s loaded' % self.current_plate_name)
-            else:
-                self.log('TransferProtocol is complete')
-
-        else:
-            self.log('Warning: Plate %s not yet complete' % self.current_plate_name)
-            skipped_transfers_in_plate = list(
-                set(self.lists['uncompleted']) &
-                set(self.transfers_by_plate[self.current_plate_name]))
-
-            self.msg = 'Skipping this plate will skip %s remaining transfers. Are you sure?' % len(skipped_transfers_in_plate)
-
-            if self.override:
-                self.override = False
-                # collect leftover transfers
-                skipped_transfers_in_plate = list(
-                     set(self.lists['uncompleted']) &
-                     set(self.transfers_by_plate[self.current_plate_name]))
-
-                # Mark uncomplete transfers as skipped for this plate
-                for tf in skipped_transfers_in_plate:
-                    self.transfers[tf].updateStatus(TStatus.skipped)
-
-                self.log('Remaining %s transfers in plate %s skipped' %
-                         (len(skipped_transfers_in_plate), self.current_plate_name))
-
-                if self.protocolComplete():
-                    pass
-                else:
-                    self.current_plate_increment()
-                    self.current_idx_increment(steps=len(skipped_transfers_in_plate))
-                    self.log('Plate %s loaded' % self.current_plate_name)
+        '''
+        default behavior to perform when iterating through each transer in the transfer sequence
+        '''
+        pass
 
     def sortTransfers(self):
         self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [],
@@ -197,12 +145,6 @@ class TransferProtocol(object):
         print(msg)
         logging.info(msg)
 
-    def plateComplete(self):
-        for tf in self.transfers_by_plate[self.current_plate_name]:
-            if self.transfers[tf].status == TStatus.uncompleted:
-                return False
-        return True
-
     def protocolComplete(self):
         for tf in self.tf_seq:
             if self.transfers[tf].status == TStatus.uncompleted:
@@ -216,20 +158,11 @@ class TransferProtocol(object):
         self.synchronize()
 
     def current_idx_decrement(self):
-        self._current_plate -= 1
-        self.synchronize()
-
-    def current_plate_increment(self):
-        self._current_plate += 1
-        self.synchronize()
-
-    def current_plate_decrement(self):
-        self._current_plate -= 1
+        self._current_idx -= 1
         self.synchronize()
 
     def synchronize(self):
         self.current_uid = self.tf_seq[self._current_idx]
-        self.current_plate_name = self.plate_names[self._current_plate]
 
 
 

@@ -23,7 +23,7 @@ from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.uix.filechooser import FileChooserListView
 import json, logging, time, os, time, csv
-from WellToWell import WelltoWell
+from WelltoWell import WelltoWell
 from Transfer import TransferProtocol
 
 logging.basicConfig(
