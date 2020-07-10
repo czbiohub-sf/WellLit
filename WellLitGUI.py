@@ -6,7 +6,11 @@
 # Andrew Cote
 # 6/30/2020
 
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 import kivy
+import json, logging, os
 kivy.require('1.11.1')
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -21,52 +25,38 @@ from kivy.uix.button import Button
 from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.uix.filechooser import FileChooserListView
-import json, logging, time, os, time, csv
+
 from .Transfer import TransferProtocol
 from .plateLighting import PlateLighting
+
 
 class LoadDialog(FloatLayout):
 	load = ObjectProperty(None)
 	cancel = ObjectProperty(None)
-
-#TODO: Add warning messages about file importing into a popup window
-#TODO: Add buttons that change the marker type of a WellPlot object
-#TODO: Could move TP directly into Well2WellWidget
 
 
 class WellLitWidget(FloatLayout):
 	def __init__(self, **kwargs):
 		super(WellLitWidget, self).__init__(**kwargs)
 		self._popup = None
-		self.tp = TransferProtocol()
 
 	def dismiss_popup(self):
 		self._popup.dismiss()
 
-	def show_load(self):
-		content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
-		self._popup = Popup(title='Load File', content=content, size_hint=(0.5, 0.5))
-		self._popup.open()
-
-	def load(self, path, filename):
-		target = (os.path.join(str(path), str(filename[0])))
-		logging.info('User selected file %s to load' % target)
-		self.dismiss_popup()
-		if os.path.isfile(target):
-			self.wtw.loadCsv(target)
-			if self.wtw.tp is not None:
-				self.reset_plates()
-				self.updateLights()
-				self.tp.id_type = ''
-
 	def updateLights(self):
 		pass
 
+	def updateLights(self):
+
+		pass
+
+	def reset_plates(self):
+		self.ids.source_plate.initialize()
+		self.ids.dest_plate.initialize()
+
 	def resetAll(self): 
 		self.plateLighting.reset()
-		self.ids.notificationLabel.font_size = 50
-		self.canUndo = False
-		self.warningsMade = False
+		self.ids.notificationLabel.font_size = 20
 
 
 class WellPlot(BoxLayout):
@@ -104,7 +94,7 @@ class WellPlot(BoxLayout):
 class ConfirmPopup(Popup):
 	def __init__(self, txt_file_path=None):
 		super(ConfirmPopup, self).__init__()
-		self.pos_hint={'y': 800 /  Window.height}
+		self.pos_hint={'y': 800 / Window.height}
 		self.txt_file_path = txt_file_path
 
 	def show(self):
@@ -154,3 +144,5 @@ class WellLitPopup(Popup):
 		close_button.bind(on_press=self.dismiss)
 		self.content = content
 		self.open()
+
+
