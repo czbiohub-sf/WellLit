@@ -21,9 +21,10 @@ class WStatus(Enum):
 	empty = 1
 	target = 2
 	filled = 3
+	unused = 4
 
 	def color(self):
-		return {'empty': 'gray', 'target': 'red', 'filled': 'blue'}[self.name]
+		return {'empty': 'gray', 'target': 'red', 'filled': 'blue', 'unused': 'black'}[self.name]
 
 
 class Well:

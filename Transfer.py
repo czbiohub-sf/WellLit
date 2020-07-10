@@ -28,7 +28,7 @@ class TStatus(Enum):
 
 class Transfer(dict):
     """
-    Dict like object that contains transfer information. Requires unique id for initialization.
+    Represents a unique transfer from well/tube to well/tube.
     """
 
     def __init__(self, unique_id,
@@ -111,6 +111,15 @@ class TransferProtocol(object):
         else:
             return str(curr_tf['source_well'] + '->' + curr_tf['dest_well'])
 
+    def canUpdate(self):
+        current_transfer = self.transfers[self.current_uid]
+        if current_transfer['timestamp'] is None:
+            return True
+        else:
+            self.log('Cannot update transfer: %s, status is already marked as %s \n' %
+                     (self.tf_id(), self.transfers[self.current_uid]['status']))
+            raise TError(self.msg)
+
     def complete(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.completed)
@@ -142,7 +151,6 @@ class TransferProtocol(object):
 
     def log(self, msg: str):
         self.msg = msg
-        print(msg)
         logging.info(msg)
 
     def protocolComplete(self):
