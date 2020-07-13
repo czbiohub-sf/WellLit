@@ -46,8 +46,23 @@ class WellLitWidget(FloatLayout):
 	def updateLights(self):
 		pass
 
-	def updateLights(self):
-		pass
+	@property
+	def makeWellNames(self):
+		well_rows = [chr(x) for x in range(ord('A'), ord('H') + 1)]
+		well_nums = [x for x in range(1, 13)]
+		well_names = []
+		for idx_r, row in enumerate(well_rows):
+			for idx_n, num in enumerate(well_nums):
+				well_name = row + str(num)
+				well_names.append(well_name)
+		return well_names
+
+	def showPopup(self, error, title: str, func=None):
+		self._popup = WellLitPopup()
+		self._popup.size_hint = (0.3, .7)
+		self._popup.pos_hint = {'x': 10.0 / Window.width, 'y': 100 / Window.height}
+		self._popup.title = title
+		self._popup.show(error.__str__(), func=func)
 
 	def reset_plates(self):
 		self.ids.source_plate.initialize()
@@ -119,7 +134,7 @@ class ConfirmPopup(Popup):
 
 	def yes_callback(self, *args):
 		if self.txt_file_path:
-			txt_file = open(self.txt_file_path,"w")
+			txt_file = open(self.txt_file_path, "w")
 			txt_file.close()
 
 

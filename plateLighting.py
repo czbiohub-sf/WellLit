@@ -43,17 +43,22 @@ class Well:
 	def markEmpty(self):
 		self.status = WStatus.empty
 		self.marker.set_color(self.status.color())
-		self.marker.zorder = 0
+		self.marker.zorder = 1
 
 	def markFilled(self):
 		self.status = WStatus.filled
 		self.marker.set_color(self.status.color())
-		self.marker.zorder = 1
+		self.marker.zorder = 2
 
 	def markTarget(self):
 		self.status = WStatus.target
 		self.marker.set_color(self.status.color())
-		self.marker.zorder = 2
+		self.marker.zorder = 3
+
+	def markUnused(self):
+		self.status = WStatus.unused
+		self.marker.set_color(self.status.color())
+		self.marker.zorder = 0
 
 	def setMarker(self, shape):
 		if shape == 'circle':
@@ -126,10 +131,18 @@ class PlateLighting:
 	def markEmpty(self, name):
 		self.well_dict[name].markEmpty()
 
+	def markUnused(self, name):
+		self.well_dict[name].markUnused()
+
 	def emptyWells(self):
 		# mark all wells as empty
 		for name in self.well_list:
 			self.well_dict[name].markEmpty()
+
+	def blackoutWells(self):
+		# mark all wells unused
+		for name in self.well_list:
+			self.well_dict[name].markUnused()
 
 	def show(self):
 		self.fig.canvas.draw()
