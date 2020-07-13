@@ -16,6 +16,14 @@ class TError(Exception):
         return self.msg
 
 
+class TConfirm(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
 class TStatus(Enum):
     uncompleted = 0
     completed = 1
@@ -52,7 +60,7 @@ class Transfer(dict):
         self['timestamp'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
     def resetTransfer(self):
-        self['status'] = TStatus.uncompleted
+        self['status'] = TStatus.uncompleted.name
         self['timestamp'] = None
 
 
@@ -80,6 +88,7 @@ class TransferProtocol(object):
         self.msg = ''
         self.override = False
         self.canUndo = False
+        self.unDid = False
         self._current_idx = 0
         self.tf_seq = np.array(0, dtype=object)
 
@@ -101,10 +110,11 @@ class TransferProtocol(object):
     def sortTransfers(self):
         self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [],
                       'target': self.transfers[self.current_uid].id}
-        for transfer in self.transfers.values():
-            self.lists[self.transfers[transfer.id]['status']].append(transfer.id)
+        for tf_id in self.transfers.keys():
+            self.lists[self.transfers[tf_id]['status']].append(tf_id)
 
     def tf_id(self):
+        self.synchronize()
         curr_tf = self.transfers[self.current_uid]
         if self.id_type == 'uid':
             return curr_tf.id[0:8]
@@ -112,6 +122,8 @@ class TransferProtocol(object):
             return str(curr_tf['source_well'] + '->' + curr_tf['dest_well'])
 
     def canUpdate(self):
+        self.synchronize()
+        self.sortTransfers()
         current_transfer = self.transfers[self.current_uid]
         if current_transfer['timestamp'] is None:
             return True
@@ -139,11 +151,12 @@ class TransferProtocol(object):
             self.step()
 
     def undo(self):
+        self.synchronize()
+        self.sortTransfers()
         if self.canUndo:
-            if not self.plateComplete():
-                self.current_idx_decrement()
-
+            self.current_idx_decrement()
             self.transfers[self.current_uid].resetTransfer()
+            self.sortTransfers()
             self.canUndo = False
             self.log('transfer marked incomplete: %s' % self.tf_id())
         else:
@@ -154,6 +167,7 @@ class TransferProtocol(object):
         logging.info(msg)
 
     def protocolComplete(self):
+        self.sortTransfers()
         for tf in self.tf_seq:
             if self.transfers[tf].status == TStatus.uncompleted:
                 return False

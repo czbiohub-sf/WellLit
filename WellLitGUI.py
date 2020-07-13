@@ -47,7 +47,6 @@ class WellLitWidget(FloatLayout):
 		pass
 
 	def updateLights(self):
-
 		pass
 
 	def reset_plates(self):
@@ -94,12 +93,12 @@ class WellPlot(BoxLayout):
 class ConfirmPopup(Popup):
 	def __init__(self, txt_file_path=None):
 		super(ConfirmPopup, self).__init__()
-		self.pos_hint={'y': 800 / Window.height}
+		self.pos_hint={'left': 1}
 		self.txt_file_path = txt_file_path
 
-	def show(self):
+	def show(self, text):
 		content = BoxLayout(orientation='vertical')
-		popup_lb = Label(text='Finish plate?', font_size=30)
+		popup_lb = Label(text=text, font_size=25)
 		content.add_widget(popup_lb)
 		button_box = BoxLayout(orientation='horizontal', size_hint=(1, .4))
 		content.add_widget(button_box)
@@ -115,7 +114,6 @@ class ConfirmPopup(Popup):
 		button_box.add_widget(no_button)
 		no_button.bind(on_press=self.dismiss)
 
-
 		self.content = content
 		self.open()
 
@@ -128,18 +126,19 @@ class ConfirmPopup(Popup):
 class WellLitPopup(Popup):
 	def __init__(self):
 		super(WellLitPopup, self).__init__()
-		self.pos_hint={'top': 0.8}
 
 	def show(self, error_str, func=None):
 		content = BoxLayout(orientation='vertical')
-		popup_lb = Label(text=error_str, font_size=30)
+		popup_lb = Label(text=error_str, font_size=15)
 		content.add_widget(popup_lb)
 		if func is not None:
 			confirm_button = Button(text='Confirm', size_hint=(0.5, 0.4))
 			content.add_widget(confirm_button)
 			confirm_button.bind(on_press=func)
 			confirm_button.bind(on_press=self.dismiss)
-		close_button = Button(text='Close', size_hint=(0.5, .4))
+			close_button = Button(text='Cancel', size_hint=(0.5, .4))
+		else:
+			close_button = Button(text='Close', size_hint=(0.5, .4))
 		content.add_widget(close_button)
 		close_button.bind(on_press=self.dismiss)
 		self.content = content
