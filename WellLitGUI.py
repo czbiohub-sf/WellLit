@@ -22,6 +22,7 @@ from kivy.core.window import Window
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
+from kivy.metrics import sp
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.widget import Widget
 from kivy.uix.filechooser import FileChooserListView
@@ -48,11 +49,6 @@ class WellLitWidget(FloatLayout):
 				well_name = row + str(num)
 				well_names.append(well_name)
 		return well_names
-
-	@property
-	def on_log(self, instance, value):
-		app = App.get_running_app()
-		app.logText.text = str(value)
 
 	def __init__(self, **kwargs):
 		super(WellLitWidget, self).__init__(**kwargs)
@@ -154,7 +150,7 @@ class WellLitPopup(Popup):
 
 	def show(self, error_str, func=None):
 		content = BoxLayout(orientation='vertical')
-		popup_lb = Label(text=error_str, font_size=15)
+		popup_lb = Label(text=error_str, font_size=30, text_size=(sp(450), sp(800)), halign='center', valign='center')
 		content.add_widget(popup_lb)
 		if func is not None:
 			confirm_button = Button(text='Confirm', size_hint=(0.5, 0.4))

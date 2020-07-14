@@ -114,7 +114,6 @@ class PlateLighting:
 			# new_well = Well(orig_well.center, self.shape, self.size_dict[self.shape])
 			self.well_dict[name].setMarker(shape)
 		self.refresh()
-		print('Marker set tp %s' % shape)
 
 	def refresh(self):
 		self.ax.clear()

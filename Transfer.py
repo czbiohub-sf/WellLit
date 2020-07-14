@@ -132,7 +132,7 @@ class TransferProtocol(object):
         if current_transfer['timestamp'] is None:
             return True
         else:
-            self.log('Cannot update transfer: %s, status is already marked as %s \n' %
+            self.log('Cannot update transfer: %s, status is already marked as %s ' %
                      (self.tf_id(), self.transfers[self.current_uid]['status']))
             raise TError(self.msg)
 
