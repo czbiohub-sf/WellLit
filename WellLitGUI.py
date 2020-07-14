@@ -94,7 +94,7 @@ class WellPlot(BoxLayout):
 	def initialize(self):
 		# load configs
 		cwd = os.getcwd()
-		config_path = os.path.join(cwd, "WellLit/wellLitConfig.json")
+		config_path = os.path.join(cwd, "wellLitConfig.json")
 		with open(config_path) as json_file:
 			configs = json.load(json_file)
 		A1_X = configs["A1_X"]
