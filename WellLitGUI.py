@@ -10,7 +10,7 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import kivy
-import json, logging, os
+import json, logging, os, threading, time
 kivy.require('1.11.1')
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -22,7 +22,7 @@ from kivy.core.window import Window
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.widget import Widget
 from kivy.uix.filechooser import FileChooserListView
 
@@ -36,15 +36,7 @@ class LoadDialog(FloatLayout):
 
 
 class WellLitWidget(FloatLayout):
-	def __init__(self, **kwargs):
-		super(WellLitWidget, self).__init__(**kwargs)
-		self._popup = None
-
-	def dismiss_popup(self):
-		self._popup.dismiss()
-
-	def updateLights(self):
-		pass
+	status = StringProperty('')
 
 	@property
 	def makeWellNames(self):
@@ -56,6 +48,24 @@ class WellLitWidget(FloatLayout):
 				well_name = row + str(num)
 				well_names.append(well_name)
 		return well_names
+
+	@property
+	def on_log(self, instance, value):
+		app = App.get_running_app()
+		app.logText.text = str(value)
+
+	def __init__(self, **kwargs):
+		super(WellLitWidget, self).__init__(**kwargs)
+		self._popup = None
+
+	def log(self, msg):
+		self.status = msg
+
+	def dismiss_popup(self):
+		self._popup.dismiss()
+
+	def updateLights(self):
+		pass
 
 	def showPopup(self, error, title: str, func=None):
 		self._popup = WellLitPopup()

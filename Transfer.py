@@ -109,7 +109,11 @@ class TransferProtocol(object):
 
     def sortTransfers(self):
         self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [],
-                      'target': self.transfers[self.current_uid].id}
+                      'target': None}
+        if self.transfers[self.current_uid].status is not TStatus.uncompleted:
+            self.lists['target'] = self.transfers[self.current_uid]
+        else:
+            self.lists['target'] = None
         for tf_id in self.transfers.keys():
             self.lists[self.transfers[tf_id]['status']].append(tf_id)
 
