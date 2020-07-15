@@ -3,10 +3,6 @@ from datetime import datetime
 import uuid, logging
 import numpy as np
 
-# TODO: figure out a better way of assigning a plate-name
-# TODO: possible: create TransferSequence class
-DEST = 'destination-plate'
-
 
 class TError(Exception):
     def __init__(self, msg):

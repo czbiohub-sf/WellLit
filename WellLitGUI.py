@@ -10,12 +10,10 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import kivy
-import json, logging, os, threading, time
+import json, os
 kivy.require('1.11.1')
-from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-from kivy.core.window import Window
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 # noinspection ProblematicWhitespace
 from kivy.core.window import Window
@@ -24,10 +22,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.metrics import sp
 from kivy.properties import ObjectProperty, StringProperty
-from kivy.uix.widget import Widget
-from kivy.uix.filechooser import FileChooserListView
 
-from .Transfer import TransferProtocol
 from .plateLighting import PlateLighting
 
 

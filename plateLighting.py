@@ -6,14 +6,6 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle
 import matplotlib as mpl
 
-# !/usr/bin/env python3
-
-# Joana Cabrera
-# 3/15/2020
-import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, Rectangle
-import matplotlib as mpl
-
 from enum import Enum
 
 
