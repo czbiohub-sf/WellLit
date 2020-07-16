@@ -12,6 +12,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import kivy
 import json, os
 kivy.require('1.11.1')
+from kivy.app import App
+from kivy.config import Config
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
@@ -24,11 +26,6 @@ from kivy.metrics import sp
 from kivy.properties import ObjectProperty, StringProperty
 
 from .plateLighting import PlateLighting
-
-
-class LoadDialog(FloatLayout):
-	load = ObjectProperty(None)
-	cancel = ObjectProperty(None)
 
 
 class WellLitWidget(FloatLayout):
@@ -48,6 +45,17 @@ class WellLitWidget(FloatLayout):
 	def __init__(self, **kwargs):
 		super(WellLitWidget, self).__init__(**kwargs)
 		self._popup = None
+		self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+		self._keyboard.bind(on_key_down=self._on_keyboard_up)
+		Config.set('kivy', 'exit_on_escape', 0)
+
+	def _keyboard_closed(self):
+		self._keyboard.unbind(on_key_up=self._on_keyboard_up)
+		self._keyboard = None
+
+	def _on_keyboard_up(self, keyboard, keycode, text, modifiers):
+		if keycode[1] == 'q':
+			self.showPopup('Are you sure you want to exit?', 'Confirm exit', func=self.quit)
 
 	def log(self, msg):
 		self.status = msg
@@ -73,6 +81,9 @@ class WellLitWidget(FloatLayout):
 		self.plateLighting.reset()
 		self.ids.notificationLabel.font_size = 20
 
+	def quit(self, _):
+		App.get_running_app().stop()
+
 
 class WellPlot(BoxLayout):
 	'''
@@ -92,8 +103,15 @@ class WellPlot(BoxLayout):
 		config_path = os.path.join(cwd, "wellLitConfig.json")
 		with open(config_path) as json_file:
 			configs = json.load(json_file)
-		A1_X = configs["A1_X"]
-		A1_Y = configs["A1_Y"]
+
+		if self.type == 'source_plate':
+			A1_X = configs["A1_X_source"]
+			A1_Y = configs["A1_Y_source"]
+
+		if self.type == 'dest_plate':
+			A1_X = configs["A1_X_dest"]
+			A1_Y = configs["A1_Y_dest"]
+
 		size_param = configs["size_param"]
 		well_spacing = configs["well_spacing"]
 
