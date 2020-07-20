@@ -29,7 +29,8 @@ class Well:
 		if shape == 'circle':
 			self.marker = Circle(self.center, radius=size_param, color=self.status.color(), zorder=0)
 		elif shape == 'square':
-			self.marker = Rectangle(self.center, width=size_param, height=size_param, color=self.status.color(),
+			self.marker = Rectangle((self.center[0] - self.size_param/2, self.center[1] - self.size_param/2),
+									width=size_param, height=size_param, color=self.status.color(),
 									zorder=0)
 
 	def markEmpty(self):
@@ -52,11 +53,14 @@ class Well:
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 0
 
-	def setMarker(self, shape):
+	def setMarker(self, shape, size):
+		self.shape = shape
+		self.size_param = size
+
 		if shape == 'circle':
 			self.marker = Circle(self.center, radius=self.size_param, color=self.status.color(), zorder=0)
 		elif shape == 'square':
-			self.marker = Rectangle(self.center, width=self.size_param, height=self.size_param,
+			self.marker = Rectangle((self.center[0] - self.size_param/2, self.center[1] - self.size_param/2), width=self.size_param, height=self.size_param,
 									color=self.status.color(), zorder=0)
 
 
@@ -104,7 +108,7 @@ class PlateLighting:
 		for name in self.well_list:
 			# orig_well = self.well_dict[name]
 			# new_well = Well(orig_well.center, self.shape, self.size_dict[self.shape])
-			self.well_dict[name].setMarker(shape)
+			self.well_dict[name].setMarker(shape, self.size_dict[shape])
 		self.refresh()
 
 	def refresh(self):
