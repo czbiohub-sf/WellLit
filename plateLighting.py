@@ -94,7 +94,7 @@ class PlateLighting:
 		config_path = os.path.join(cwd, "wellLitConfig.json")
 		with open(config_path) as json_file:
 			configs = json.load(json_file)
-		num_wells = configs['type']
+		num_wells = configs['num_wells']
 		if num_wells == '384':
 			rows = 24
 			self.well_rows = [chr(x) for x in range(ord('A'), ord('P') + 1)]

@@ -93,7 +93,7 @@ class WellPlot(BoxLayout):
 		with open(config_path) as json_file:
 			configs = json.load(json_file)
 
-		self.num_wells = configs['type']
+		self.num_wells = configs['num_wells']
 
 		if self.type == 'source_plate':
 			A1_X = configs[self.num_wells]["A1_X_source"]
