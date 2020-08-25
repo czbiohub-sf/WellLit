@@ -119,7 +119,10 @@ class TransferProtocol(object):
         if self.id_type == 'uid':
             return curr_tf.id[0:8]
         else:
-            return str(curr_tf['source_well'] + '->' + curr_tf['dest_well'])
+            if curr_tf['source_well'] is not None:
+                return str(curr_tf['source_well'] + '->' + curr_tf['dest_well'])
+            if curr_tf['source_tube'] is not None:
+                return str(curr_tf['source_tube'] + '->' + curr_tf['dest_well'])
 
     def canUpdate(self):
         self.synchronize()

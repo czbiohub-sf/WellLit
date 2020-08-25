@@ -43,7 +43,7 @@ class WellLitWidget(FloatLayout):
 		self._keyboard = None
 
 	def _on_keyboard_up(self, keyboard, keycode, text, modifiers):
-		if keycode[1] == 'q':
+		if keycode[1] == 'esc':
 			self.showPopup('Are you sure you want to exit?', 'Confirm exit', func=self.quit)
 
 	def log(self, msg):
