@@ -31,17 +31,6 @@ from .plateLighting import PlateLighting
 class WellLitWidget(FloatLayout):
 	status = StringProperty('')
 
-	@property
-	def makeWellNames(self):
-		well_rows = [chr(x) for x in range(ord('A'), ord('H') + 1)]
-		well_nums = [x for x in range(1, 13)]
-		well_names = []
-		for idx_r, row in enumerate(well_rows):
-			for idx_n, num in enumerate(well_nums):
-				well_name = row + str(num)
-				well_names.append(well_name)
-		return well_names
-
 	def __init__(self, **kwargs):
 		super(WellLitWidget, self).__init__(**kwargs)
 		self._popup = None
@@ -104,16 +93,18 @@ class WellPlot(BoxLayout):
 		with open(config_path) as json_file:
 			configs = json.load(json_file)
 
+		self.num_wells = configs['type']
+
 		if self.type == 'source_plate':
-			A1_X = configs["A1_X_source"]
-			A1_Y = configs["A1_Y_source"]
+			A1_X = configs[self.num_wells]["A1_X_source"]
+			A1_Y = configs[self.num_wells]["A1_Y_source"]
 
 		if self.type == 'dest_plate':
-			A1_X = configs["A1_X_dest"]
-			A1_Y = configs["A1_Y_dest"]
+			A1_X = configs[self.num_wells]["A1_X_dest"]
+			A1_Y = configs[self.num_wells]["A1_Y_dest"]
 
-		size_param = configs["size_param"]
-		well_spacing = configs["well_spacing"]
+		size_param = configs[self.num_wells]["size_param"]
+		well_spacing = configs[self.num_wells]["well_spacing"]
 
 		# set up PlateLighting object
 		self.pl = PlateLighting(A1_X, A1_Y, self.shape, size_param, well_spacing)

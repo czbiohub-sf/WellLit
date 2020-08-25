@@ -5,7 +5,7 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Rectangle
 import matplotlib as mpl
-
+import os, json
 from enum import Enum
 
 
@@ -89,15 +89,27 @@ class PlateLighting:
 		self.refresh()  # adds dict of wells to canvas in 8x12 grid
 
 	def makeWells(self):
-		self.well_rows = [chr(x) for x in range(ord('A'), ord('H') + 1)]
-		self.well_nums = [x for x in range(1, 13)]
+
+		cwd = os.getcwd()
+		config_path = os.path.join(cwd, "wellLitConfig.json")
+		with open(config_path) as json_file:
+			configs = json.load(json_file)
+		num_wells = configs['type']
+		if num_wells == '384':
+			rows = 24
+			self.well_rows = [chr(x) for x in range(ord('A'), ord('P') + 1)]
+			self.well_nums = [x for x in range(1, rows + 1)]
+		else:
+			rows = 12
+			self.well_rows = [chr(x) for x in range(ord('A'), ord('H') + 1)]
+			self.well_nums = [x for x in range(1, rows + 1)]
 
 		for idx_r, row in enumerate(self.well_rows):
 			for idx_n, num in enumerate(self.well_nums):
 				well_name = row + str(num)
 				self.well_list.append(well_name)
 				x_coord = self.a1_x + self.well_spacing * idx_n
-				y_coord = self.a1_y + self.well_spacing * (12 - idx_r)
+				y_coord = self.a1_y + self.well_spacing * (rows - idx_r)
 				size_param = self.size_dict[self.shape]
 
 				self.well_dict[well_name] = Well((x_coord, y_coord),
