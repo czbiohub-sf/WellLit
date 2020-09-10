@@ -2,6 +2,7 @@ from enum import Enum
 from datetime import datetime
 import uuid, logging
 import numpy as np
+from abc import ABC, abstractmethod
 
 
 class TError(Exception):
@@ -73,7 +74,7 @@ referenced by unique_id and moved between lists like completed, skipped, etc.
 '''
 
 
-class TransferProtocol(object):
+class TransferProtocol(ABC):
 
     def __init__(self, id_type='uid'):
         self.id_type = id_type
@@ -88,18 +89,26 @@ class TransferProtocol(object):
         self._current_idx = 0
         self.tf_seq = np.array(0, dtype=object)
 
-    '''
-    buildTransferProtocol and step should be implemented in inherited classes according to the use-case application
-    '''
+
+    @abstractmethod
+    def canUpdate(self):
+        '''
+        Defines when it is allowable to change the TStatus of a Transfer (skip, fail, complete)
+        :return:
+        '''
+
+    @abstractmethod
     def buildTransferProtocol(self):
         '''
         Populates a transfer sequence of Transfer objects in a specified order, and assigned unique ids to each Transfer
         '''
         pass
 
+    @abstractmethod
     def step(self):
         '''
         default behavior to perform when iterating through each transer in the transfer sequence
+        must set self.canUndo flag
         '''
         pass
 
