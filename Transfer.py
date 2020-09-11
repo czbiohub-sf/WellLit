@@ -89,14 +89,6 @@ class TransferProtocol(ABC):
         self._current_idx = 0
         self.tf_seq = np.array(0, dtype=object)
 
-
-    @abstractmethod
-    def canUpdate(self):
-        '''
-        Defines when it is allowable to change the TStatus of a Transfer (skip, fail, complete)
-        :return:
-        '''
-
     @abstractmethod
     def buildTransferProtocol(self):
         '''

@@ -29,7 +29,7 @@ from .plateLighting import PlateLighting
 from abc import ABC, abstractmethod
 
 
-class WellLitWidget(FloatLayout, ABC):
+class WellLitWidget(FloatLayout):
 	status = StringProperty('')
 
 	def __init__(self, **kwargs):
@@ -39,7 +39,7 @@ class WellLitWidget(FloatLayout, ABC):
 		self._keyboard.bind(on_key_down=self._on_keyboard_up)
 		Config.set('kivy', 'exit_on_escape', 0)
 
-	@abstractmethod
+
 	def updateLights(self):
 		"""
 		To be called after every user action, updating the current WellPlots by accessing self.ids.___plate
