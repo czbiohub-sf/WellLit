@@ -80,6 +80,7 @@ class TransferProtocol(ABC):
         self.id_type = id_type
         self.transfers = {}
         self.current_uid = None
+        self.current_transfer = None
         self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'target': None}
         self.error_msg = ''
         self.msg = ''
@@ -189,6 +190,7 @@ class TransferProtocol(ABC):
 
     def synchronize(self):
         self.current_uid = self.tf_seq[self._current_idx]
+        self.current_transfer = self.transfers[self.current_uid]
 
 
 

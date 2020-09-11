@@ -71,8 +71,7 @@ class WellLitWidget(FloatLayout):
 		self.ids.source_plate.initialize()
 		self.ids.dest_plate.initialize()
 
-	def resetAll(self): 
-		self.plateLighting.reset()
+	def resetAll(self):
 		self.ids.notificationLabel.font_size = 20
 
 	def quit(self, _):
