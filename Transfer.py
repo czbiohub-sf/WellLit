@@ -166,6 +166,7 @@ class TransferProtocol(ABC):
             self.log('transfer marked incomplete: %s' % self.tf_id())
         else:
             self.log('Cannot undo previous operation')
+            raise TError('Cannot undo previous operation')
 
     def log(self, msg: str):
         self.msg = msg
