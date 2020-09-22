@@ -62,8 +62,8 @@ class WellLitWidget(FloatLayout):
 
 	def showPopup(self, error, title: str, func=None):
 		self._popup = WellLitPopup()
-		self._popup.size_hint = (0.3, .7)
-		self._popup.pos_hint = {'x': 10.0 / Window.width, 'y': 100 / Window.height}
+		self._popup.size_hint = (0.3, 0.3)
+		self._popup.pos_hint = {'x': 1, 'y': 1}
 		self._popup.title = title
 		self._popup.show(error.__str__(), func=func)
 
@@ -71,8 +71,7 @@ class WellLitWidget(FloatLayout):
 		self.ids.source_plate.initialize()
 		self.ids.dest_plate.initialize()
 
-	def resetAll(self): 
-		self.plateLighting.reset()
+	def resetAll(self):
 		self.ids.notificationLabel.font_size = 20
 
 	def quit(self, _):
