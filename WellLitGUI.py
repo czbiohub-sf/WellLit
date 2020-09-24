@@ -62,8 +62,6 @@ class WellLitWidget(FloatLayout):
 
 	def showPopup(self, error, title: str, func=None):
 		self._popup = WellLitPopup()
-		self._popup.size_hint = (0.3, 0.3)
-		self._popup.pos_hint = {'x': 1, 'y': 1}
 		self._popup.title = title
 		self._popup.show(error.__str__(), func=func)
 
