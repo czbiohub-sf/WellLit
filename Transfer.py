@@ -60,6 +60,7 @@ class Transfer(dict):
     def resetTransfer(self):
         self['status'] = TStatus.uncompleted.name
         self['timestamp'] = None
+        self['source_tube'] = None
 
 
 '''
@@ -189,6 +190,7 @@ class TransferProtocol(ABC):
 
     def current_idx_decrement(self):
         self._current_idx -= 1
+        self._current_idx = max(self._current_idx, 0)
         self.synchronize()
 
     def synchronize(self):
