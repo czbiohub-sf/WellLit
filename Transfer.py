@@ -26,9 +26,10 @@ class TStatus(Enum):
     completed = 1
     skipped = 2
     failed = 3
+    started = 4
 
     def color(self):
-        return {'uncompleted': 'gray', 'failed': 'red', 'completed': 'blue', 'skipped': 'yellow'}[self.name]
+        return {'uncompleted': 'gray', 'failed': 'red', 'completed': 'blue', 'skipped': 'yellow', 'started': 'green'}[self.name]
 
 
 class Transfer(dict):
@@ -59,6 +60,7 @@ class Transfer(dict):
     def resetTransfer(self):
         self['status'] = TStatus.uncompleted.name
         self['timestamp'] = None
+        self['source_tube'] = None
 
 
 '''
@@ -81,7 +83,7 @@ class TransferProtocol(ABC):
         self.transfers = {}
         self.current_uid = None
         self.current_transfer = None
-        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'target': None}
+        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'started': [], 'target': None}
         self.error_msg = ''
         self.msg = ''
         self.override = False
@@ -106,9 +108,9 @@ class TransferProtocol(ABC):
         pass
 
     def sortTransfers(self):
-        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [],
+        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'started': [],
                       'target': None}
-        if self.transfers[self.current_uid].status is not TStatus.uncompleted:
+        if self.transfers[self.current_uid].status is TStatus.started:
             self.lists['target'] = self.transfers[self.current_uid]
         else:
             self.lists['target'] = None
@@ -172,6 +174,7 @@ class TransferProtocol(ABC):
             self.log('transfer marked incomplete: %s' % self.tf_id())
         else:
             self.log('Cannot undo previous operation')
+            raise TError('Cannot undo previous operation')
 
     def log(self, msg: str):
         self.msg = msg
@@ -188,15 +191,18 @@ class TransferProtocol(ABC):
 
     def current_idx_increment(self, steps=1):
         self._current_idx += steps
+        self._current_idx = min(self._current_idx, len(self.tf_seq)-1)
         self.synchronize()
 
     def current_idx_decrement(self):
         self._current_idx -= 1
+        self._current_idx = max(self._current_idx, 0)
         self.synchronize()
 
     def synchronize(self):
         self.current_uid = self.tf_seq[self._current_idx]
         self.current_transfer = self.transfers[self.current_uid]
+
 
 
 
