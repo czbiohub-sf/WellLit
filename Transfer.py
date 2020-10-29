@@ -110,7 +110,7 @@ class TransferProtocol(ABC):
     def sortTransfers(self):
         self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'started': [],
                       'target': None}
-        if self.transfers[self.current_uid].status is not TStatus.uncompleted:
+        if self.transfers[self.current_uid].status is TStatus.started:
             self.lists['target'] = self.transfers[self.current_uid]
         else:
             self.lists['target'] = None
