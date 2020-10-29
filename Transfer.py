@@ -143,6 +143,12 @@ class TransferProtocol(ABC):
             self.log('transfer complete: %s' % self.tf_id())
             self.step()
 
+    def start(self):
+        if self.canUpdate():
+            self.transfers[self.current_uid].updateStatus(TStatus.started)
+            self.log('transfer started: %s' % self.tf_id())
+            self.step()
+
     def skip(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.skipped)
