@@ -17,7 +17,7 @@ class WStatus(Enum):
 	control = 5
 
 	def color(self):
-		return {'empty': 'darkslategray', 'target': 'red', 'filled': 'blue', 'unused': 'black', 'control':'yellow'}[self.name]
+		return {'empty': 'darkslategray', 'target': 'yellow', 'filled': 'red', 'unused': 'black', 'control': 'white'}[self.name]
 
 class Well:
 	""" A class for individual wells in the matplotlib plot
