@@ -55,7 +55,9 @@ class Transfer(dict):
     def updateStatus(self, status: TStatus):
         self.status = status
         self['status'] = status.name
-        self['timestamp'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        # only mark timestamp if the status is marked with a finishing status: skipped, failed, completed.
+        if status is not TStatus.started and status is not TStatus.uncompleted:
+            self['timestamp'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
     def resetTransfer(self):
         self['status'] = TStatus.uncompleted.name
@@ -154,21 +156,35 @@ class TransferProtocol(ABC):
     def skip(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.skipped)
-            self.log('transfer skipped: %s' % self.tf_id())
+            # self.log('transfer skipped: %s' % self.tf_id())
             self.step()
+            self.synchronize()
+            self.transfers[self.current_uid].updateStatus(TStatus.started)
 
     def failed(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.failed)
-            self.log('transfer failed: %s' % self.tf_id())
+            # self.log('transfer failed: %s' % self.tf_id())
             self.step()
+            self.synchronize()
+            self.transfers[self.current_uid].updateStatus(TStatus.started)
 
     def undo(self):
+        """
+        When a transfer is undone:
+        - there must be at least one 'finished state' transfer: skipped, failed, completed.
+        - The current started transfer is reset. index decrements one, resets the previous transfer, then re-starts it.
+        - From there that previous transfer can be marked as skipped, failed, or completed.
+        """
         self.synchronize()
         self.sortTransfers()
         if self.canUndo:
+
+            # mark the current started transfer as uncomplete, decrement, mark uncomplete, then re-start.
+            self.transfers[self.current_uid].resetTransfer()
             self.current_idx_decrement()
             self.transfers[self.current_uid].resetTransfer()
+            self.transfers[self.current_uid].updateStatus(TStatus.started)
             self.sortTransfers()
             self.canUndo = False
             self.log('transfer marked incomplete: %s' % self.tf_id())
