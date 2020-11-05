@@ -144,19 +144,19 @@ class TransferProtocol(ABC):
     def complete(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.completed)
-            self.log('transfer complete: %s' % self.tf_id())
+          #  self.log('transfer complete: %s' % self.tf_id())
             self.step()
 
     def start(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.started)
-            self.log('transfer started: %s' % self.tf_id())
+          #  self.log('transfer started: %s' % self.tf_id())
             self.step()
 
     def skip(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.skipped)
-            # self.log('transfer skipped: %s' % self.tf_id())
+            self.log('Transfer Skipped: %s' % self.tf_id())
             self.step()
             self.synchronize()
             self.transfers[self.current_uid].updateStatus(TStatus.started)
@@ -164,7 +164,7 @@ class TransferProtocol(ABC):
     def failed(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.failed)
-            # self.log('transfer failed: %s' % self.tf_id())
+            self.log('Transfer Failed: %s' % self.tf_id())
             self.step()
             self.synchronize()
             self.transfers[self.current_uid].updateStatus(TStatus.started)
