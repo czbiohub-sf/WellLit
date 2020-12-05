@@ -14,9 +14,12 @@ class WStatus(Enum):
 	target = 2
 	filled = 3
 	unused = 4
+	control = 5
+	rescan = 6
 
 	def color(self):
-		return {'empty': 'darkslategray', 'target': 'yellow', 'filled': 'red', 'unused': 'black'}[self.name]
+		return {'empty': 'darkslategray', 'target': 'yellow', 'filled': 'red', 'unused': 'black', 'control': 'white', 'rescan': 'blue'}[self.name]
+
 
 class Well:
 	""" A class for individual wells in the matplotlib plot
@@ -48,10 +51,20 @@ class Well:
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 3
 
+	def markControl(self):
+		self.status = WStatus.control
+		self.marker.set_color(self.status.color())
+		self.marker.zorder = 3
+
 	def markUnused(self):
 		self.status = WStatus.unused
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 0
+
+	def markRescan(self):
+		self.status = WStatus.rescan
+		self.marker.set_color(self.status.color())
+		self.marker.zorder = 5
 
 	def setMarker(self, shape, size):
 		self.shape = shape
@@ -140,8 +153,14 @@ class PlateLighting:
 	def markEmpty(self, name):
 		self.well_dict[name].markEmpty()
 
+	def markControl(self, name):
+		self.well_dict[name].markControl()
+
 	def markUnused(self, name):
 		self.well_dict[name].markUnused()
+
+	def markRescan(self, name):
+		self.well_dict[name].markRescan()
 
 	def emptyWells(self):
 		# mark all wells as empty

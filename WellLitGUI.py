@@ -26,6 +26,7 @@ from kivy.metrics import sp
 from kivy.properties import ObjectProperty, StringProperty
 
 from .plateLighting import PlateLighting
+from abc import ABC, abstractmethod
 
 
 class WellLitWidget(FloatLayout):
@@ -38,12 +39,19 @@ class WellLitWidget(FloatLayout):
 		self._keyboard.bind(on_key_down=self._on_keyboard_up)
 		Config.set('kivy', 'exit_on_escape', 0)
 
+
+	def updateLights(self):
+		"""
+		To be called after every user action, updating the current WellPlots by accessing self.ids.___plate
+		"""
+		pass
+
 	def _keyboard_closed(self):
 		self._keyboard.unbind(on_key_up=self._on_keyboard_up)
 		self._keyboard = None
 
 	def _on_keyboard_up(self, keyboard, keycode, text, modifiers):
-		if keycode[1] == 'q':
+		if keycode[1] == 'esc' or keycode[1] == 'q':
 			self.showPopup('Are you sure you want to exit?', 'Confirm exit', func=self.quit)
 
 	def log(self, msg):
@@ -52,13 +60,8 @@ class WellLitWidget(FloatLayout):
 	def dismiss_popup(self):
 		self._popup.dismiss()
 
-	def updateLights(self):
-		pass
-
 	def showPopup(self, error, title: str, func=None):
 		self._popup = WellLitPopup()
-		self._popup.size_hint = (0.3, .7)
-		self._popup.pos_hint = {'x': 10.0 / Window.width, 'y': 100 / Window.height}
 		self._popup.title = title
 		self._popup.show(error.__str__(), func=func)
 
@@ -66,8 +69,7 @@ class WellLitWidget(FloatLayout):
 		self.ids.source_plate.initialize()
 		self.ids.dest_plate.initialize()
 
-	def resetAll(self): 
-		self.plateLighting.reset()
+	def resetAll(self):
 		self.ids.notificationLabel.font_size = 20
 
 	def quit(self, _):
@@ -85,6 +87,7 @@ class WellPlot(BoxLayout):
 
 	def __init__(self, **kwargs):
 		super(WellPlot, self).__init__(**kwargs)
+		self.pl = None
 
 	def initialize(self):
 		# load configs

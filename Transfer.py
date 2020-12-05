@@ -2,6 +2,7 @@ from enum import Enum
 from datetime import datetime
 import uuid, logging
 import numpy as np
+from abc import ABC, abstractmethod
 
 
 class TError(Exception):
@@ -25,9 +26,10 @@ class TStatus(Enum):
     completed = 1
     skipped = 2
     failed = 3
+    started = 4
 
     def color(self):
-        return {'uncompleted': 'gray', 'failed': 'red', 'completed': 'blue', 'skipped': 'yellow'}[self.name]
+        return {'uncompleted': 'gray', 'failed': 'red', 'completed': 'blue', 'skipped': 'yellow', 'started': 'green'}[self.name]
 
 
 class Transfer(dict):
@@ -53,11 +55,14 @@ class Transfer(dict):
     def updateStatus(self, status: TStatus):
         self.status = status
         self['status'] = status.name
-        self['timestamp'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        # only mark timestamp if the status is marked with a finishing status: skipped, failed, completed.
+        if status is not TStatus.started and status is not TStatus.uncompleted:
+            self['timestamp'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
     def resetTransfer(self):
         self['status'] = TStatus.uncompleted.name
         self['timestamp'] = None
+        self['source_tube'] = None
 
 
 '''
@@ -73,13 +78,14 @@ referenced by unique_id and moved between lists like completed, skipped, etc.
 '''
 
 
-class TransferProtocol(object):
+class TransferProtocol(ABC):
 
     def __init__(self, id_type='uid'):
         self.id_type = id_type
         self.transfers = {}
         self.current_uid = None
-        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'target': None}
+        self.current_transfer = None
+        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'started': [], 'target': None}
         self.error_msg = ''
         self.msg = ''
         self.override = False
@@ -88,25 +94,25 @@ class TransferProtocol(object):
         self._current_idx = 0
         self.tf_seq = np.array(0, dtype=object)
 
-    '''
-    buildTransferProtocol and step should be implemented in inherited classes according to the use-case application
-    '''
+    @abstractmethod
     def buildTransferProtocol(self):
         '''
         Populates a transfer sequence of Transfer objects in a specified order, and assigned unique ids to each Transfer
         '''
         pass
 
+    @abstractmethod
     def step(self):
         '''
         default behavior to perform when iterating through each transer in the transfer sequence
+        must set self.canUndo flag
         '''
         pass
 
     def sortTransfers(self):
-        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [],
+        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'started': [],
                       'target': None}
-        if self.transfers[self.current_uid].status is not TStatus.uncompleted:
+        if self.transfers[self.current_uid].status is TStatus.started:
             self.lists['target'] = self.transfers[self.current_uid]
         else:
             self.lists['target'] = None
@@ -119,7 +125,10 @@ class TransferProtocol(object):
         if self.id_type == 'uid':
             return curr_tf.id[0:8]
         else:
-            return str(curr_tf['source_well'] + '->' + curr_tf['dest_well'])
+            if curr_tf['source_well'] is not None:
+                return str(curr_tf['source_well'] + '->' + curr_tf['dest_well'])
+            if curr_tf['source_tube'] is not None:
+                return str(curr_tf['source_tube'] + '->' + curr_tf['dest_well'])
 
     def canUpdate(self):
         self.synchronize()
@@ -135,32 +144,53 @@ class TransferProtocol(object):
     def complete(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.completed)
-            self.log('transfer complete: %s' % self.tf_id())
+          #  self.log('transfer complete: %s' % self.tf_id())
+            self.step()
+
+    def start(self):
+        if self.canUpdate():
+            self.transfers[self.current_uid].updateStatus(TStatus.started)
+          #  self.log('transfer started: %s' % self.tf_id())
             self.step()
 
     def skip(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.skipped)
-            self.log('transfer skipped: %s' % self.tf_id())
+            self.log('Transfer Skipped: %s' % self.tf_id())
             self.step()
+            self.synchronize()
+            self.transfers[self.current_uid].updateStatus(TStatus.started)
 
     def failed(self):
         if self.canUpdate():
             self.transfers[self.current_uid].updateStatus(TStatus.failed)
-            self.log('transfer failed: %s' % self.tf_id())
+            self.log('Transfer Failed: %s' % self.tf_id())
             self.step()
+            self.synchronize()
+            self.transfers[self.current_uid].updateStatus(TStatus.started)
 
     def undo(self):
+        """
+        When a transfer is undone:
+        - there must be at least one 'finished state' transfer: skipped, failed, completed.
+        - The current started transfer is reset. index decrements one, resets the previous transfer, then re-starts it.
+        - From there that previous transfer can be marked as skipped, failed, or completed.
+        """
         self.synchronize()
         self.sortTransfers()
         if self.canUndo:
+
+            # mark the current started transfer as uncomplete, decrement, mark uncomplete, then re-start.
+            self.transfers[self.current_uid].resetTransfer()
             self.current_idx_decrement()
             self.transfers[self.current_uid].resetTransfer()
+            self.transfers[self.current_uid].updateStatus(TStatus.started)
             self.sortTransfers()
             self.canUndo = False
             self.log('transfer marked incomplete: %s' % self.tf_id())
         else:
             self.log('Cannot undo previous operation')
+            raise TError('Cannot undo previous operation')
 
     def log(self, msg: str):
         self.msg = msg
@@ -177,14 +207,18 @@ class TransferProtocol(object):
 
     def current_idx_increment(self, steps=1):
         self._current_idx += steps
+        self._current_idx = min(self._current_idx, len(self.tf_seq)-1)
         self.synchronize()
 
     def current_idx_decrement(self):
         self._current_idx -= 1
+        self._current_idx = max(self._current_idx, 0)
         self.synchronize()
 
     def synchronize(self):
         self.current_uid = self.tf_seq[self._current_idx]
+        self.current_transfer = self.transfers[self.current_uid]
+
 
 
 
