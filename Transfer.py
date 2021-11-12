@@ -104,7 +104,7 @@ class TransferProtocol(ABC):
     @abstractmethod
     def step(self):
         '''
-        default behavior to perform when iterating through each transer in the transfer sequence
+        default behavior to perform when iterating through each transfer in the transfer sequence
         must set self.canUndo flag
         '''
         pass
