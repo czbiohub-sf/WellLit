@@ -16,9 +16,18 @@ class WStatus(Enum):
 	unused = 4
 	control = 5
 	rescan = 6
+	discarded = 7
 
 	def color(self):
-		return {'empty': 'darkslategray', 'target': 'yellow', 'filled': 'red', 'unused': 'black', 'control': 'white', 'rescan': 'blue'}[self.name]
+		return {
+			'empty': 'darkslategray',
+			'target': 'yellow',
+			'filled': 'red',
+			'unused': 'black',
+			'control': 'white',
+			'rescan': 'blue',
+			'discarded': 'gray'
+			}[self.name]
 
 
 class Well:
@@ -40,6 +49,11 @@ class Well:
 		self.status = WStatus.empty
 		self.marker.set_color(self.status.color())
 		self.marker.zorder = 1
+
+	def markDiscarded(self):
+		self.status = WStatus.discarded
+		self.marker.set_color(self.status.color())
+		self.marker.zorder = 3
 
 	def markFilled(self):
 		self.status = WStatus.filled
