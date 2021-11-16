@@ -167,6 +167,9 @@ class PlateLighting:
 	def markEmpty(self, name):
 		self.well_dict[name].markEmpty()
 
+	def markDiscarded(self, name):
+		self.well_dict[name].markDiscarded()
+
 	def markControl(self, name):
 		self.well_dict[name].markControl()
 
