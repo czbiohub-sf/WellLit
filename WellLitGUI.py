@@ -157,7 +157,7 @@ class WellLitPopup(Popup):
 
 	def show(self, error_str, func=None):
 		content = BoxLayout(orientation='vertical')
-		popup_lb = Label(text=error_str, font_size=30, text_size=(sp(450), sp(800)), halign='center', valign='center')
+		popup_lb = Label(text=error_str, font_size=25, text_size=(sp(450), sp(800)), halign='center', valign='center')
 		content.add_widget(popup_lb)
 		if func is not None:
 			confirm_button = Button(text='Confirm', size_hint=(0.5, 0.4))
