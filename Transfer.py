@@ -27,6 +27,7 @@ class TStatus(Enum):
     skipped = 2
     failed = 3
     started = 4
+    discarded = 5
 
     def color(self):
         return {'uncompleted': 'gray', 'failed': 'red', 'completed': 'blue', 'skipped': 'yellow', 'started': 'green'}[self.name]
@@ -110,7 +111,7 @@ class TransferProtocol(ABC):
         pass
 
     def sortTransfers(self):
-        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'started': [],
+        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'discarded': [], 'started': [],
                       'target': None}
         if self.transfers[self.current_uid].status is TStatus.started:
             self.lists['target'] = self.transfers[self.current_uid]
@@ -218,10 +219,3 @@ class TransferProtocol(ABC):
     def synchronize(self):
         self.current_uid = self.tf_seq[self._current_idx]
         self.current_transfer = self.transfers[self.current_uid]
-
-
-
-
-
-
-
