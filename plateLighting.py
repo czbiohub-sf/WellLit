@@ -26,7 +26,7 @@ class WStatus(Enum):
 			'unused': 'black',
 			'control': 'white',
 			'rescan': 'blue',
-			'discarded': 'gray'
+			'discarded': 'whitesmoke'
 			}[self.name]
 
 
