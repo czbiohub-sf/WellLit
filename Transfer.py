@@ -86,7 +86,7 @@ class TransferProtocol(ABC):
         self.transfers = {}
         self.current_uid = None
         self.current_transfer = None
-        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'started': [], 'target': None}
+        self.lists = {'uncompleted': [], 'completed': [], 'skipped': [], 'failed': [], 'discarded': [], 'started': [], 'target': None}
         self.error_msg = ''
         self.msg = ''
         self.override = False
