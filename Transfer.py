@@ -130,6 +130,8 @@ class TransferProtocol(ABC):
                 return str(curr_tf['source_well'] + '->' + curr_tf['dest_well'])
             if curr_tf['source_tube'] is not None:
                 return str(curr_tf['source_tube'] + '->' + curr_tf['dest_well'])
+            else:
+                return ''
 
     def canUpdate(self):
         self.synchronize()
