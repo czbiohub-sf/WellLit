@@ -95,7 +95,7 @@ class PlateLighting:
 	""" A class for lighting up the corresponding well using matplotlib
     """
 
-	def __init__(self, a1_x, a1_y, shape, size_dict, well_spacing):
+	def __init__(self, a1_x, a1_y, shape, size_dict, well_spacing, num_wells):
 
 		# set up plot
 		mpl.rcParams['toolbar'] = 'None'
@@ -108,6 +108,7 @@ class PlateLighting:
 		self.shape = shape
 		self.size_dict = size_dict
 		self.well_spacing = well_spacing
+		self.num_wells = num_wells
 
 		self.well_dict = {}  # maps well names to Well objects
 		self.well_list = []
@@ -116,13 +117,7 @@ class PlateLighting:
 		self.refresh()  # adds dict of wells to canvas in 8x12 grid
 
 	def makeWells(self):
-
-		cwd = os.getcwd()
-		config_path = os.path.join(cwd, "wellLitConfig.json")
-		with open(config_path) as json_file:
-			configs = json.load(json_file)
-		num_wells = configs['num_wells']
-		if num_wells == '384':
+		if self.num_wells == '384':
 			rows = 24
 			self.well_rows = [chr(x) for x in range(ord('A'), ord('P') + 1)]
 			self.well_nums = [x for x in range(1, rows + 1)]

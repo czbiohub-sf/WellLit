@@ -65,9 +65,9 @@ class WellLitWidget(FloatLayout):
 		self._popup.title = title
 		self._popup.show(error.__str__(), func=func)
 
-	def reset_plates(self):
-		self.ids.source_plate.initialize()
-		self.ids.dest_plate.initialize()
+	def reset_plates(self, config_path):
+		self.ids.source_plate.initialize(config_path)
+		self.ids.dest_plate.initialize(config_path)
 
 	def resetAll(self):
 		self.ids.notificationLabel.font_size = 20
@@ -89,10 +89,8 @@ class WellPlot(BoxLayout):
 		super(WellPlot, self).__init__(**kwargs)
 		self.pl = None
 
-	def initialize(self):
+	def initialize(self, config_path):
 		# load configs
-		cwd = os.getcwd()
-		config_path = os.path.join(cwd, "wellLitConfig.json")
 		with open(config_path) as json_file:
 			configs = json.load(json_file)
 
@@ -110,7 +108,7 @@ class WellPlot(BoxLayout):
 		well_spacing = configs[self.num_wells]["well_spacing"]
 
 		# set up PlateLighting object
-		self.pl = PlateLighting(A1_X, A1_Y, self.shape, size_param, well_spacing)
+		self.pl = PlateLighting(A1_X, A1_Y, self.shape, size_param, well_spacing, self.num_wells)
 		self.add_widget(FigureCanvasKivyAgg(figure=self.pl.fig))
 
 	def on_touch_down(self, touch):
